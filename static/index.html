@@ -1,0 +1,2503 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Quản Lý Kho Nội Bộ - Bộ Công An MVP</title>
+    <!-- Google Fonts Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for AI Dashboard Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --bg-body: #061A14;
+            --bg-card: rgba(13, 43, 34, 0.9);
+            --bg-card-hover: rgba(18, 59, 47, 0.95);
+            --primary: #059669;
+            --primary-hover: #047857;
+            --secondary: #1E3A34;
+            --accent-gold: #F59E0B;
+            --accent-red: #DC2626;
+            --success: #10B981;
+            --success-hover: #059669;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --text-main: #F0FDF4;
+            --text-muted: #A7F3D0;
+            --border-color: rgba(16, 185, 129, 0.25);
+            --radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: radial-gradient(circle at top center, #0B3327 0%, #04140F 100%);
+            color: var(--text-main);
+            padding: 24px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            background: linear-gradient(135deg, rgba(6, 78, 59, 0.8) 0%, rgba(4, 120, 87, 0.4) 100%);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            border-radius: 16px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .logo-title {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .logo-icon {
+            background: linear-gradient(135deg, #DC2626 0%, #D97706 50%, #059669 100%);
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #FEF08A;
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
+            border: 1.5px solid #F59E0B;
+        }
+
+        h1 {
+            font-size: 20px;
+            font-weight: 800;
+            background: linear-gradient(90deg, #FEF08A, #6EE7B7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: #A7F3D0;
+            margin-top: 2px;
+        }
+
+        /* Navigation Tabs */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 24px;
+            background: rgba(6, 31, 24, 0.8);
+            padding: 8px;
+            border-radius: 14px;
+            border: 1px solid var(--border-color);
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #A7F3D0;
+            padding: 12px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.25s ease;
+        }
+
+        .tab-btn:hover {
+            color: #F0FDF4;
+            background: rgba(16, 185, 129, 0.15);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            color: #FEF08A;
+            box-shadow: 0 4px 15px rgba(5, 150, 105, 0.4);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+        }
+
+        /* Content Sections */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Cards Layout */
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 24px;
+        }
+
+        .grid-layout.export-layout {
+            grid-template-columns: 440px 1fr;
+        }
+
+        .grid-layout.full-width {
+            grid-template-columns: 1fr;
+        }
+
+        @media (max-width: 950px) {
+            .grid-layout, .grid-layout.export-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 22px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: #FEF08A;
+            border-bottom: 1px dashed rgba(16, 185, 129, 0.2);
+            padding-bottom: 10px;
+        }
+
+        /* Stat KPI Card */
+        .kpi-card {
+            background: rgba(4, 20, 15, 0.7);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .kpi-icon {
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            color: #A7F3D0;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        input, select {
+            width: 100%;
+            background-color: #04140F;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #F0FDF4;
+            padding: 11px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        input:focus, select:focus {
+            border-color: #F59E0B;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.2);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            color: white;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            padding: 11px 18px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            transform: translateY(-1px);
+        }
+
+        .btn-danger-gradient {
+            background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%);
+            border-color: #EF4444;
+        }
+        .btn-danger-gradient:hover {
+            background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+        }
+
+        .btn-gold-gradient {
+            background: linear-gradient(135deg, #D97706 0%, #B45309 100%);
+            border-color: #F59E0B;
+            color: #FEF08A;
+        }
+        .btn-gold-gradient:hover {
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+        }
+
+        .btn-secondary {
+            background-color: #1E3A34;
+            border-color: rgba(16, 185, 129, 0.25);
+            color: #A7F3D0;
+        }
+        .btn-secondary:hover {
+            background-color: #274D45;
+            color: white;
+        }
+
+        /* Table */
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            text-align: left;
+        }
+
+        th {
+            background-color: rgba(4, 20, 15, 0.8);
+            color: #FEF08A;
+            font-weight: 700;
+            padding: 13px;
+            border-bottom: 1.5px solid rgba(16, 185, 129, 0.3);
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 13px;
+            border-bottom: 1px solid rgba(16, 185, 129, 0.15);
+            color: #F0FDF4;
+        }
+
+        tr.item-row {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        tr.item-row:hover td {
+            background-color: rgba(16, 185, 129, 0.12);
+        }
+
+        .item-name-clickable {
+            color: #6EE7B7;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .item-name-clickable:hover {
+            color: #FEF08A;
+            text-decoration: underline;
+        }
+
+        .item-thumbnail {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            object-fit: cover;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            background: #04140F;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .item-thumbnail:hover {
+            transform: scale(1.15);
+            border-color: #F59E0B;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+        }
+
+        .badge-tag {
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            width: max-content;
+        }
+
+        .badge-pending {
+            background: rgba(245, 158, 11, 0.2);
+            color: #FBBF24;
+            border: 1px solid rgba(245, 158, 11, 0.4);
+        }
+
+        .badge-exported {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34D399;
+            border: 1px solid rgba(52, 211, 153, 0.4);
+        }
+
+        /* Detail Modal Popup */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(4, 20, 15, 0.88);
+            backdrop-filter: blur(10px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: #0D3B2E;
+            border: 1.5px solid #F59E0B;
+            border-radius: 18px;
+            width: 100%;
+            max-width: 650px;
+            padding: 24px;
+            box-shadow: 0 0 40px rgba(245, 158, 11, 0.25), 0 25px 60px rgba(0,0,0,0.8);
+            position: relative;
+            animation: modalFadeIn 0.25s ease-out;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes chatFadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px dashed rgba(16, 185, 129, 0.3);
+            padding-bottom: 14px;
+            margin-bottom: 18px;
+        }
+
+        .modal-header h3 {
+            color: #FEF08A;
+            font-size: 18px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-close {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            color: #FEF08A;
+            font-size: 22px;
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .modal-close:hover {
+            background: #EF4444;
+            color: white;
+            transform: scale(1.1);
+            border-color: #EF4444;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            gap: 22px;
+        }
+
+        @media (max-width: 600px) {
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .detail-img-box {
+            background: #04140F;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 12px;
+            padding: 10px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .detail-img-box img {
+            width: 100%;
+            height: 170px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            margin-bottom: 10px;
+        }
+
+        .detail-qr-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 8px;
+            border: 1px solid #F59E0B;
+            background: white;
+            padding: 4px;
+        }
+
+        .detail-info-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .detail-info-row {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .detail-info-label {
+            font-size: 12px;
+            color: #A7F3D0;
+            font-weight: 600;
+        }
+
+        .detail-info-val {
+            font-size: 15px;
+            font-weight: 700;
+            color: #F0FDF4;
+        }
+
+        /* Export Output Box */
+        .export-result-box {
+            margin-top: 20px;
+            background: rgba(5, 150, 105, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            border-radius: var(--radius);
+            padding: 16px;
+            display: none;
+        }
+
+        .file-download-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .download-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            text-decoration: none;
+            color: var(--text-main);
+            transition: transform 0.2s, border-color 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .download-card:hover {
+            transform: translateY(-2px);
+            border-color: #F59E0B;
+        }
+
+        .download-card i {
+            font-size: 24px;
+        }
+
+        .icon-pdf { color: #EF4444; }
+        .icon-excel { color: #10B981; }
+        .icon-word { color: #3B82F6; }
+
+        /* Toast Notifications */
+        #toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background-color: #061F18;
+            border: 1.5px solid #059669;
+            color: white;
+            padding: 14px 22px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            display: none;
+            align-items: center;
+            gap: 12px;
+            z-index: 3000;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Header -->
+    <header>
+        <div class="logo-title">
+            <div class="logo-icon"><i class="fa-solid fa-shield-halved"></i></div>
+            <div>
+                <h1>HỆ THỐNG QUẢN LÝ KHO KỸ THUẬT VẬT TƯ</h1>
+                <div class="subtitle">BỘ CÔNG AN - TỰ ĐỘNG HÓA QUÉT MÃ QR, PHÂN TÍCH AI DỰ BÁO KHO KÈM NHẬT KÝ BẢO MẬT</div>
+            </div>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center; position: relative;">
+            <!-- Notification Bell Icon (Feature C) -->
+            <div style="position: relative;">
+                <button onclick="toggleAlertsDrawer()" style="background: rgba(4, 20, 15, 0.8); border: 1.5px solid #F59E0B; color: #FEF08A; width: 42px; height: 42px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; position: relative;">
+                    <i class="fa-solid fa-bell"></i>
+                    <span id="alert-badge-count" style="display: none; position: absolute; top: -5px; right: -5px; background: #DC2626; color: white; border-radius: 10px; padding: 2px 6px; font-size: 10px; font-weight: 800; border: 1px solid #FEF08A; box-shadow: 0 0 8px #DC2626;">0</span>
+                </button>
+
+                <!-- Alerts Dropdown Drawer -->
+                <div id="alerts-drawer" style="display: none; position: absolute; top: 50px; right: 0; width: 340px; background: #08241C; border: 1.5px solid #F59E0B; border-radius: 14px; box-shadow: 0 15px 40px rgba(0,0,0,0.8); z-index: 2500; padding: 14px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px dashed rgba(245,158,11,0.3);">
+                        <strong style="color: #FEF08A; font-size: 13px;"><i class="fa-solid fa-triangle-exclamation" style="color: #F59E0B;"></i> THÔNG BÁO KHẨN KHO</strong>
+                        <button onclick="toggleAlertsDrawer()" style="background: transparent; border: none; color: #A7F3D0; font-size: 16px; cursor: pointer;">&times;</button>
+                    </div>
+                    <div id="alerts-drawer-content" style="max-height: 280px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; font-size: 12px;">
+                        <div style="text-align: center; color: #A7F3D0; padding: 10px;">Đang kiểm tra thông báo...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Role Switcher -->
+            <select id="role-select" onchange="changeRole(this.value)" style="width: auto; padding: 9px 14px; font-size: 13px; font-weight: 700; background: #04140F; color: #FEF08A; border: 1.5px solid #F59E0B; border-radius: 8px;">
+                <option value="admin">👑 Vai Trò: Admin (Quản Trị)</option>
+                <option value="user">👤 Vai Trò: Cán Bộ / Nhân Viên</option>
+            </select>
+
+            <!-- Security Audit Log Button (Feature C) -->
+            <button class="btn btn-secondary" onclick="openAuditModal()" style="width: auto; padding: 9px 14px; font-size: 13px;">
+                <i class="fa-solid fa-user-shield"></i> Nhật Ký Bảo Mật
+            </button>
+
+            <a href="/scan" class="btn btn-danger-gradient" style="width: auto; padding: 9px 14px; font-size: 13px; text-decoration: none;">
+                <i class="fa-solid fa-qrcode"></i> Quét Mã QR Di Động Hàng Loạt
+            </a>
+            <button class="btn btn-secondary" onclick="seedSampleData()" style="width: auto; padding: 9px 14px; font-size: 13px;">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Nạp Dữ Liệu Mẫu
+            </button>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('tab-dashboard', this)">
+            <i class="fa-solid fa-chart-line"></i> 0. Dashboard AI & Dự Báo Kho
+        </button>
+        <button class="tab-btn" onclick="switchTab('tab-inventory', this)">
+            <i class="fa-solid fa-boxes-stacked"></i> 1. Danh Mục Vật Tư Kho
+        </button>
+        <button class="tab-btn" onclick="switchTab('tab-requests', this)">
+            <i class="fa-solid fa-file-invoice"></i> 2. Phiếu Yêu Cầu Xuất Vận Dụng
+        </button>
+        <button class="tab-btn" onclick="switchTab('tab-export', this)">
+            <i class="fa-solid fa-file-export"></i> 3. Duyệt Xuất Kho & Lịch Sử File Báo Cáo
+        </button>
+    </div>
+
+    <!-- TAB 0: DASHBOARD AI & PREDICTIVE ANALYTICS (FEATURE A) -->
+    <div id="tab-dashboard" class="tab-content active">
+        <!-- KPI Stat Cards Grid -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px;">
+            <div class="kpi-card">
+                <div class="kpi-icon" style="background: rgba(5, 150, 105, 0.2); color: #34D399; border: 1px solid rgba(52, 211, 153, 0.4);"><i class="fa-solid fa-boxes-stacked"></i></div>
+                <div>
+                    <div style="font-size: 11px; color: #A7F3D0; font-weight: 600;">TỔNG VẬT TƯ KHO</div>
+                    <div id="kpi-total-items" style="font-size: 22px; font-weight: 800; color: #FEF08A;">0</div>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-icon" style="background: rgba(59, 130, 246, 0.2); color: #60A5FA; border: 1px solid rgba(96, 165, 250, 0.4);"><i class="fa-solid fa-cubes"></i></div>
+                <div>
+                    <div style="font-size: 11px; color: #A7F3D0; font-weight: 600;">TỔNG SỐ LƯỢNG TỒN</div>
+                    <div id="kpi-total-stock" style="font-size: 22px; font-weight: 800; color: #60A5FA;">0</div>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-icon" style="background: rgba(245, 158, 11, 0.2); color: #FBBF24; border: 1px solid rgba(245, 158, 11, 0.4);"><i class="fa-solid fa-hourglass-half"></i></div>
+                <div>
+                    <div style="font-size: 11px; color: #A7F3D0; font-weight: 600;">PHIẾU CHỜ DUYỆT XUẤT</div>
+                    <div id="kpi-pending-requests" style="font-size: 22px; font-weight: 800; color: #FBBF24;">0</div>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-icon" style="background: rgba(239, 68, 68, 0.2); color: #FCA5A5; border: 1px solid rgba(239, 68, 68, 0.4);"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                <div>
+                    <div style="font-size: 11px; color: #A7F3D0; font-weight: 600;">VẬT TƯ CẢNH BÁO TỒN</div>
+                    <div id="kpi-low-stock" style="font-size: 22px; font-weight: 800; color: #FCA5A5;">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Predictive Alerts Container Widget -->
+        <div class="card" style="margin-bottom: 24px; border: 1.5px solid #F59E0B; background: linear-gradient(135deg, rgba(13, 59, 46, 0.9) 0%, rgba(6, 31, 24, 0.95) 100%);">
+            <div class="card-title" style="border-bottom: 1px dashed rgba(245,158,11,0.4);">
+                <span style="color: #FEF08A; font-size: 17px; font-weight: 800; display: flex; align-items: center; gap: 10px;">
+                    <i class="fa-solid fa-robot" style="color: #F59E0B; font-size: 20px;"></i> HỆ THỐNG AI CẢNH BÁO SỚM & DỰ BÁO TỒN KHO TỰ ĐỘNG
+                </span>
+                <span style="font-size: 11px; background: rgba(245, 158, 11, 0.2); color: #FEF08A; padding: 4px 10px; border-radius: 12px; border: 1px solid #F59E0B;">
+                    Real-time AI Prediction Engine
+                </span>
+            </div>
+            <div id="ai-predictive-alerts-box" style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="color: #A7F3D0; font-size: 13px;">Đang chạy thuật toán AI phân tích dữ liệu kho...</div>
+            </div>
+        </div>
+
+        <!-- Interactive Charts Grid (Chart.js) -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+            <div class="card">
+                <div class="card-title">
+                    <span><i class="fa-solid fa-chart-pie"></i> Cơ Cấu Tồn Kho Theo Vật Tư</span>
+                </div>
+                <div style="position: relative; height: 260px; display: flex; justify-content: center;">
+                    <canvas id="chart-stock-breakdown"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    <span><i class="fa-solid fa-chart-column"></i> Thống Kê Số Lượng Tồn Kho Thực Tế</span>
+                </div>
+                <div style="position: relative; height: 260px;">
+                    <canvas id="chart-stock-bars"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 1: INVENTORY -->
+    <div id="tab-inventory" class="tab-content">
+        <div id="inventory-grid-layout" class="grid-layout">
+            <!-- Add Item Form (Admin Only) -->
+            <div id="card-add-item" class="card">
+                <div class="card-title">
+                    <span><i class="fa-solid fa-plus-circle"></i> Thêm Vật Tư Mới (Admin)</span>
+                </div>
+                <form id="form-add-item" onsubmit="handleAddItem(event)">
+                    <div class="form-group">
+                        <label>Mã Vật Tư (Code)</label>
+                        <input type="text" id="item_code" placeholder="Ví dụ: VT-CA01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tên Vật Tư / Thiết Bị</label>
+                        <input type="text" id="item_name" placeholder="Ví dụ: Bộ Đàm Motorola Chuyên Dụng" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Đơn Vị Tính (Unit)</label>
+                        <input type="text" id="item_unit" placeholder="Bộ, Cái, Hộp, Bộ đàm..." required>
+                    </div>
+                    <div class="form-group">
+                        <label>Số Lượng Tồn Kho Ban Đầu</label>
+                        <input type="number" id="item_stock" value="50" min="0" required>
+                    </div>
+                    
+                    <!-- Native Image Capture / Selection (iOS & Android) -->
+                    <div class="form-group">
+                        <label>Hình Ảnh Vật Tư (Tải từ máy / Chụp ảnh)</label>
+                        <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                            <button type="button" class="btn btn-secondary" onclick="triggerNativeCamera()" style="font-size: 12px; padding: 8px;">
+                                <i class="fa-solid fa-camera"></i> Chụp Ảnh Ngay
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="triggerNativeFilePicker()" style="font-size: 12px; padding: 8px;">
+                                <i class="fa-solid fa-image"></i> Chọn Từ Thư Viện
+                            </button>
+                        </div>
+                        
+                        <!-- Hidden Native File Inputs for camera and photo library -->
+                        <input type="file" id="item-camera-input" accept="image/*" capture="environment" style="display:none;" onchange="handleImageFileSelected(this)">
+                        <input type="file" id="item-file-input" accept="image/*" style="display:none;" onchange="handleImageFileSelected(this)">
+
+                        <input type="url" id="item_image" placeholder="Hoặc dán Link URL ảnh tại đây..." onchange="handleUrlInputChange(this, 'item-img-preview')">
+                        
+                        <div id="upload-status" style="font-size: 12px; color: #34D399; margin-top: 6px; display: none; font-weight: 600;">
+                            <i class="fa-solid fa-circle-notch fa-spin"></i> Đang tải ảnh lên server...
+                        </div>
+                        <img id="item-img-preview" src="" style="display:none; width: 100%; height: 120px; object-fit: cover; border-radius: 8px; margin-top: 8px; border: 1px solid rgba(16, 185, 129, 0.4); cursor: pointer;" alt="Preview" onclick="openImageLightbox(this.src, 'Ảnh Xem Trước')" title="Bấm để xem ảnh phóng to">
+                    </div>
+
+                    <button type="submit" class="btn"><i class="fa-solid fa-save"></i> Lưu Vào Kho Vật Tư</button>
+                </form>
+            </div>
+
+            <!-- Items List Table -->
+            <div class="card">
+                <div class="card-title">
+                    <span><i class="fa-solid fa-list-check"></i> Danh Sách Vật Tư Tồn Kho (Click dòng để xem chi tiết)</span>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <!-- Feature B: Print Inventory Audit PDF -->
+                        <a href="/api/export/audit-pdf" target="_blank" class="btn btn-secondary" style="width: auto; padding: 7px 12px; font-size: 13px; text-decoration: none; color: #6EE7B7; border-color: #059669;">
+                            <i class="fa-solid fa-file-pdf" style="color: #EF4444;"></i> In Biên Bản Kiểm Kê A4 (PDF)
+                        </a>
+
+                        <a id="btn-print-qr" href="/api/items/export-qr-pdf" target="_blank" class="btn btn-gold-gradient" style="width: auto; padding: 7px 12px; font-size: 13px; text-decoration: none; display: inline-flex;">
+                            <i class="fa-solid fa-print"></i> In Tem QR Decal A4
+                        </a>
+                        <input type="text" id="search-item" placeholder="Tìm tên/mã..." oninput="loadItems()" style="width: 140px; padding: 7px 12px; font-size: 13px;">
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Ảnh (Bấm xem)</th>
+                                <th>Mã VT</th>
+                                <th>Tên Vật Tư / Thiết Bị</th>
+                                <th>Đơn Vị Tính</th>
+                                <th>Tồn Kho</th>
+                                <th id="th-actions">Hành Động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="items-table-body">
+                            <tr><td colspan="6" style="text-align: center;">Đang tải dữ liệu kho...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 2: REQUESTS -->
+    <div id="tab-requests" class="tab-content">
+        <div class="grid-layout">
+            <!-- Create Request Form -->
+            <div class="card">
+                <div class="card-title">
+                    <span><i class="fa-solid fa-pen-to-square"></i> Lập Phiếu Yêu Cầu Xuất Vận Dụng</span>
+                </div>
+                <form id="form-add-request" onsubmit="handleCreateRequest(event)">
+                    <div class="form-group">
+                        <label>Họ Tên Cán Bộ Đề Xuất</label>
+                        <input type="text" id="requester_name" placeholder="Ví dụ: Đại úy Nguyễn Văn A (Đội Kỹ Thuật)" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Đơn Vị Nhận (Xuất Đi Đâu?)</label>
+                        <input type="text" id="destination" placeholder="Ví dụ: Đội Cảnh Sát Giao Thông Số 1 - Công An Tỉnh" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Lý Do / Mục Đích Xuất Kho</label>
+                        <input type="text" id="reason" placeholder="Ví dụ: Trang bị phục vụ công tác tuần tra kiểm soát khẩn cấp" required>
+                    </div>
+                    
+                    <label style="color: #FEF08A; font-weight: 700; margin-bottom: 8px; display: block;">Danh Sách Vật Tư & Số Lượng Đề Xuất Xuất Kho:</label>
+                    <div id="request-item-rows">
+                        <div class="form-group" style="display: flex; gap: 8px;">
+                            <select class="req-item-select" required></select>
+                            <input type="number" class="req-item-qty" placeholder="Số lượng" min="1" value="5" style="width: 110px;" required>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn btn-secondary" onclick="addRequestItemRow()" style="margin-bottom: 14px; font-size: 13px;">
+                        <i class="fa-solid fa-plus"></i> Thêm Dòng Vật Tư
+                    </button>
+
+                    <button type="submit" class="btn"><i class="fa-solid fa-paper-plane"></i> Gửi Phiếu Yêu Cầu Xuất Kho</button>
+                </form>
+            </div>
+
+            <!-- Requests Table -->
+            <div class="card">
+                <div class="card-title">
+                    <span><i class="fa-solid fa-clock-rotate-left"></i> Nhật Ký Phiếu Yêu Cầu Xuất Kho</span>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Mã Phiếu</th>
+                                <th>Cán Bộ Yêu Cầu</th>
+                                <th>Nơi Nhận (Xuất Đi)</th>
+                                <th>Lý Do Xuất</th>
+                                <th>Chi Tiết Vật Tư & Số Lượng</th>
+                                <th>Trạng Thái</th>
+                                <th>Ngày Tạo</th>
+                            </tr>
+                        </thead>
+                        <tbody id="requests-table-body">
+                            <tr><td colspan="7" style="text-align: center;">Chưa có phiếu yêu cầu nào...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 3: EXPORT & GENERATE FILES (2-COLUMN SIDE-BY-SIDE LAYOUT) -->
+    <div id="tab-export" class="tab-content">
+        <div class="grid-layout export-layout">
+            <!-- LEFT COLUMN: Export Action Form -->
+            <div class="card">
+                <div class="card-title">
+                    <span><i class="fa-solid fa-bolt"></i> Duyệt Xuất Kho & Sinh Báo Cáo</span>
+                </div>
+                
+                <p style="color: #A7F3D0; font-size: 13px; margin-bottom: 16px; line-height: 1.5;">
+                    Chọn phiếu đã lập để phê duyệt: Trừ tồn kho ➔ Ghi nhật ký ➔ Tự động tạo bộ 3 file (PDF, Excel, Word).
+                </p>
+
+                <div id="export-role-notice" class="form-group" style="display: none; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #FBBF24; padding: 12px; border-radius: 8px; font-size: 12px;">
+                    <i class="fa-solid fa-lock"></i> <strong>LƯU Ý:</strong> Thao tác duyệt xuất kho yêu cầu <strong>Quyền Admin</strong>.
+                </div>
+
+                <div class="form-group">
+                    <label style="font-size: 14px; font-weight: 700; color: #FEF08A;">Chọn Phiếu Cần Xuất Kho:</label>
+                    <select id="export-request-select" style="padding: 12px; font-size: 14px;">
+                        <option value="">-- Chọn phiếu cần xuất --</option>
+                    </select>
+                </div>
+
+                <button id="btn-execute-export" class="btn btn-gold-gradient" onclick="executeExport()" style="padding: 14px; font-size: 15px;">
+                    <i class="fa-solid fa-file-export"></i> PHÊ DUYỆT XUẤT KHO & IN BÁO CÁO
+                </button>
+
+                <!-- Export Output Results -->
+                <div id="export-result" class="export-result-box">
+                    <div style="display: flex; align-items: center; gap: 8px; color: #34D399; font-weight: 800; font-size: 15px;">
+                        <i class="fa-solid fa-circle-check" style="font-size: 20px;"></i>
+                        <span id="export-msg-title">Đã xuất kho thành công!</span>
+                    </div>
+                    <p id="export-msg-desc" style="font-size: 13px; color: #A7F3D0; margin-top: 4px;"></p>
+                    
+                    <h4 style="margin-top: 14px; font-size: 13px; color: #FEF08A;">BỘ 3 FILE BÁO CÁO MỚI SINH:</h4>
+                    <div class="file-download-grid">
+                        <a id="link-pdf" href="#" target="_blank" class="download-card">
+                            <i class="fa-solid fa-file-pdf icon-pdf"></i>
+                            <span style="font-weight: 700; font-size: 12px;">PDF</span>
+                        </a>
+                        <a id="link-excel" href="#" target="_blank" class="download-card">
+                            <i class="fa-solid fa-file-excel icon-excel"></i>
+                            <span style="font-weight: 700; font-size: 12px;">Excel</span>
+                        </a>
+                        <a id="link-word" href="#" target="_blank" class="download-card">
+                            <i class="fa-solid fa-file-word icon-word"></i>
+                            <span style="font-weight: 700; font-size: 12px;">Word</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN PANEL: Historical Generated Reports -->
+            <div class="card">
+                <div class="card-title">
+                    <span><i class="fa-solid fa-folder-open"></i> Lịch Sử Bộ File Báo Cáo Đã Xuất (Cột Phải)</span>
+                    <button class="btn btn-secondary" onclick="loadExportHistory()" style="width: auto; padding: 5px 10px; font-size: 12px;">
+                        <i class="fa-solid fa-rotate-right"></i> Làm Mới
+                    </button>
+                </div>
+                
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Mã Phiếu</th>
+                                <th>Cán Bộ & Nơi Nhận</th>
+                                <th>Thời Gian</th>
+                                <th>Tải / In Lại File / ZIP Hồ Sơ</th>
+                                <th id="th-history-edit">Sửa & In Lại</th>
+                            </tr>
+                        </thead>
+                        <tbody id="export-history-table-body">
+                            <tr><td colspan="5" style="text-align: center;">Đang tải lịch sử xuất kho...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- AUDIT SECURITY LOGS MODAL (FEATURE C) -->
+<div id="audit-log-modal" class="modal-overlay" onclick="if(event.target===this) closeAuditModal()">
+    <div class="modal-content" style="max-width: 800px; padding: 24px;">
+        <div class="modal-header">
+            <h3><i class="fa-solid fa-user-shield" style="color: #F59E0B;"></i> NHẬT KÝ BẢO MẬT HỆ THỐNG (AUDIT TRAIL LOGS)</h3>
+            <button class="modal-close" onclick="closeAuditModal()">&times;</button>
+        </div>
+        <div class="table-responsive" style="max-height: 420px; overflow-y: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Thời Gian</th>
+                        <th>Vai Trò</th>
+                        <th>Hành Động</th>
+                        <th>Đối Tượng</th>
+                        <th>Chi Tiết Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody id="audit-logs-table-body">
+                    <tr><td colspan="5" style="text-align: center;">Đang tải nhật ký bảo mật...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div style="margin-top: 16px; text-align: right;">
+            <button class="btn btn-secondary" onclick="closeAuditModal()" style="width: 120px; display: inline-flex;">Đóng</button>
+        </div>
+    </div>
+</div>
+
+<!-- ITEM DETAIL MODAL POPUP -->
+<div id="item-detail-modal" class="modal-overlay" onclick="if(event.target===this) closeModal()">
+    <div class="modal-content" style="max-width: 700px; padding: 26px; border: 1.5px solid #F59E0B; box-shadow: 0 0 40px rgba(245, 158, 11, 0.25), 0 25px 60px rgba(0,0,0,0.8);">
+        
+        <!-- Modal Header -->
+        <div class="modal-header" style="margin-bottom: 22px; padding-bottom: 16px; border-bottom: 1px dashed rgba(245, 158, 11, 0.4);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="background: linear-gradient(135deg, #DC2626 0%, #D97706 100%); width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; border: 1px solid #F59E0B; box-shadow: 0 0 10px rgba(245,158,11,0.3);">
+                    <i class="fa-solid fa-shield-halved" style="color: #FEF08A; font-size: 20px;"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 19px; font-weight: 800; background: linear-gradient(90deg, #FEF08A, #6EE7B7); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                        CHI TIẾT VẬT TƯ & THIẾT BỊ KHO
+                    </h3>
+                    <div style="font-size: 11px; color: #A7F3D0;">BỘ CÔNG AN - DỮ LIỆU ĐỊNH DẠNG CHUẨN</div>
+                </div>
+            </div>
+            <button class="modal-close" onclick="closeModal()" title="Đóng ngay (Esc / Click ngoài)">&times;</button>
+        </div>
+
+        <div class="detail-grid" style="grid-template-columns: 220px 1fr; gap: 22px;">
+            <!-- Left Panel: Image & QR Code -->
+            <div class="detail-img-box" style="background: rgba(4, 20, 15, 0.8); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 14px; padding: 14px;">
+                <div style="position: relative; width: 100%; overflow: hidden; border-radius: 10px; margin-bottom: 12px; border: 1px solid rgba(16,185,129,0.3);">
+                    <img id="detail-img-preview" src="" alt="Vật tư" style="width: 100%; height: 170px; object-fit: cover; transition: transform 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" onclick="openImageLightbox(this.src, activeDetailItem ? activeDetailItem.name : 'Chi tiết vật tư')" title="Bấm để xem ảnh phóng to">
+                </div>
+
+                <!-- Admin Image Capture / Upload controls inside Modal -->
+                <div id="modal-admin-image-controls" style="display: flex; gap: 6px; width: 100%; margin-bottom: 14px;">
+                    <button type="button" class="btn btn-secondary" onclick="triggerModalCamera()" style="font-size: 11px; padding: 6px 8px; flex: 1;">
+                        <i class="fa-solid fa-camera"></i> Chụp Ảnh
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="triggerModalFilePicker()" style="font-size: 11px; padding: 6px 8px; flex: 1;">
+                        <i class="fa-solid fa-image"></i> Chọn Ảnh
+                    </button>
+                    <input type="file" id="modal-camera-input" accept="image/*" capture="environment" style="display:none;" onchange="handleModalImageSelected(this)">
+                    <input type="file" id="modal-file-input" accept="image/*" style="display:none;" onchange="handleModalImageSelected(this)">
+                </div>
+
+                <div style="font-size: 11px; color: #FEF08A; margin-bottom: 6px; font-weight: 800; letter-spacing: 0.5px;">
+                    <i class="fa-solid fa-qrcode"></i> MÃ QR SCANNER:
+                </div>
+                <div style="background: #FFF; padding: 6px; border-radius: 10px; border: 1.5px solid #F59E0B; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.4); cursor: pointer;" onclick="openImageLightbox(document.getElementById('detail-qr-preview').src, 'Mã QR Scanner - ' + (activeDetailItem ? activeDetailItem.item_code : ''))" title="Bấm xem phóng to mã QR">
+                    <img id="detail-qr-preview" class="detail-qr-preview" src="" alt="Mã QR" style="width: 100px; height: 100px;">
+                </div>
+            </div>
+
+            <!-- Right Panel: Information Details -->
+            <div class="detail-info-list" style="display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                    <!-- Item Header Tag & Code -->
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                        <span id="detail-code" style="background: linear-gradient(135deg, #DC2626 0%, #D97706 100%); color: #FEF08A; padding: 5px 14px; border-radius: 8px; font-weight: 800; font-size: 14px; border: 1px solid #F59E0B; box-shadow: 0 4px 12px rgba(220,38,38,0.3);">
+                            VT-CA01
+                        </span>
+                        <span id="detail-status" class="badge-tag badge-exported">An Toàn (Sẵn Sàng Xuất)</span>
+                    </div>
+
+                    <!-- Item Name Title -->
+                    <h2 id="detail-name" style="font-size: 20px; font-weight: 800; color: #F0FDF4; margin-bottom: 16px; line-height: 1.3;">
+                        Bộ Đàm Motorola GP328
+                    </h2>
+
+                    <!-- Spec Cards -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                        <div style="background: rgba(4, 20, 15, 0.6); padding: 12px 14px; border-radius: 10px; border: 1px solid rgba(16,185,129,0.2);">
+                            <span class="detail-info-label">ĐƠN VỊ TÍNH:</span>
+                            <div id="detail-unit" style="font-size: 16px; font-weight: 700; color: #FEF08A; margin-top: 2px;">Bộ</div>
+                        </div>
+
+                        <div style="background: rgba(4, 20, 15, 0.6); padding: 12px 14px; border-radius: 10px; border: 1px solid rgba(16,185,129,0.2);">
+                            <span class="detail-info-label">TỒN KHO HIỆN TẠI:</span>
+                            <div id="detail-stock" style="font-size: 20px; font-weight: 800; color: #34D399; margin-top: 2px;">50 Bộ</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Button Group -->
+                <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 14px;">
+                    <div style="display: flex; gap: 8px;">
+                        <button id="btn-modal-edit-item" class="btn btn-gold-gradient" onclick="openEditItemModalFromDetail()" style="font-size: 13px; padding: 10px; flex: 1;">
+                            <i class="fa-solid fa-pen-to-square"></i> Chỉnh Sửa Thông Tin
+                        </button>
+                        <button class="btn btn-secondary" onclick="quickCreateRequestFromDetail()" style="font-size: 13px; padding: 10px; flex: 1.2;">
+                            <i class="fa-solid fa-paper-plane"></i> Lập Phiếu Xuất Item Này
+                        </button>
+                    </div>
+                    
+                    <button class="btn btn-secondary" onclick="closeModal()" style="font-size: 13px; padding: 10px; background: rgba(239, 68, 68, 0.15); border-color: rgba(239,68,68,0.4); color: #FCA5A5;">
+                        <i class="fa-solid fa-xmark"></i> Đóng Cửa Sổ (Hoặc Nhấp Ra Ngoài)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- EDIT ITEM MODAL -->
+<div id="edit-item-modal" class="modal-overlay" onclick="if(event.target===this) closeEditItemModal()">
+    <div class="modal-content" style="max-width: 520px;">
+        <div class="modal-header">
+            <h3><i class="fa-solid fa-pen-to-square" style="color: #F59E0B;"></i> CHỈNH SỬA VẬT TƯ / THIẾT BỊ</h3>
+            <button class="modal-close" onclick="closeEditItemModal()">&times;</button>
+        </div>
+        <form onsubmit="handleSaveEditItem(event)">
+            <input type="hidden" id="edit-item-id">
+            <div class="form-group">
+                <label>Mã Vật Tư (Readonly):</label>
+                <input type="text" id="edit-item-code" readonly style="background: rgba(255,255,255,0.05); color: #FEF08A; font-weight: 700;">
+            </div>
+            <div class="form-group">
+                <label>Tên Vật Tư / Thiết Bị:</label>
+                <input type="text" id="edit-item-name" required>
+            </div>
+            <div class="form-group">
+                <label>Đơn Vị Tính (Unit):</label>
+                <input type="text" id="edit-item-unit" required>
+            </div>
+            <div class="form-group">
+                <label>Số Lượng Tồn Kho:</label>
+                <input type="number" id="edit-item-stock" min="0" required>
+            </div>
+            <div class="form-group">
+                <label>Hình Ảnh Vật Tư (Tải từ máy / Chụp ảnh):</label>
+                <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                    <button type="button" class="btn btn-secondary" onclick="triggerEditItemCamera()" style="font-size: 11px; padding: 6px;">
+                        <i class="fa-solid fa-camera"></i> Chụp Ảnh Ngay
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="triggerEditItemFilePicker()" style="font-size: 11px; padding: 6px;">
+                        <i class="fa-solid fa-image"></i> Chọn Từ Thư Viện
+                    </button>
+                </div>
+                <input type="file" id="edit-item-camera-input" accept="image/*" capture="environment" style="display:none;" onchange="handleEditItemImageSelected(this)">
+                <input type="file" id="edit-item-file-input" accept="image/*" style="display:none;" onchange="handleEditItemImageSelected(this)">
+                
+                <input type="url" id="edit-item-image" placeholder="Hoặc dán Link URL ảnh tại đây..." onchange="handleUrlInputChange(this, 'edit-item-img-preview')">
+                <img id="edit-item-img-preview" src="" style="display:none; width: 100%; height: 100px; object-fit: cover; border-radius: 8px; margin-top: 6px; border: 1px solid rgba(16,185,129,0.3); cursor: pointer;" alt="Preview" onclick="openImageLightbox(this.src, 'Ảnh Xem Trước')" title="Bấm để xem ảnh phóng to">
+            </div>
+            <div style="margin-top: 20px; display: flex; gap: 10px;">
+                <button type="submit" class="btn btn-gold-gradient">
+                    <i class="fa-solid fa-floppy-disk"></i> Lưu Thay Đổi
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="closeEditItemModal()" style="width: 100px;">
+                    Hủy
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- EDIT EXPORTED REQUEST MODAL -->
+<div id="edit-export-modal" class="modal-overlay" onclick="if(event.target===this) closeEditExportModal()">
+    <div class="modal-content" style="max-width: 540px;">
+        <div class="modal-header">
+            <h3><i class="fa-solid fa-pen-to-square" style="color: #F59E0B;"></i> CHỈNH SỬA & TẠO LẠI BỘ BÁO CÁO</h3>
+            <button class="modal-close" onclick="closeEditExportModal()">&times;</button>
+        </div>
+        <form onsubmit="handleSaveEditExport(event)">
+            <input type="hidden" id="edit-export-id">
+            <div class="form-group">
+                <label>Mã Phiếu Xuất:</label>
+                <input type="text" id="edit-export-code" readonly style="background: rgba(255,255,255,0.05); color: #FEF08A; font-weight: 700;">
+            </div>
+            <div class="form-group">
+                <label>Họ Tên Cán Bộ Đề Xuất:</label>
+                <input type="text" id="edit-requester-name" required>
+            </div>
+            <div class="form-group">
+                <label>Đơn Vị Nhận (Xuất Đi Đâu?):</label>
+                <input type="text" id="edit-destination" required>
+            </div>
+            <div class="form-group">
+                <label>Lý Do / Mục Đích Xuất Kho:</label>
+                <input type="text" id="edit-reason" required>
+            </div>
+            <div style="margin-top: 20px; display: flex; gap: 10px;">
+                <button type="submit" class="btn btn-gold-gradient">
+                    <i class="fa-solid fa-arrows-rotate"></i> Cập Nhật & Sinh Lại 3 File Báo Cáo
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="closeEditExportModal()" style="width: 100px;">
+                    Hủy
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- FULLSCREEN IMAGE LIGHTBOX MODAL -->
+<div id="image-lightbox-modal" class="modal-overlay" onclick="if(event.target===this) closeImageLightbox()" style="z-index: 3500; background: rgba(0, 0, 0, 0.92); backdrop-filter: blur(12px);">
+    <div style="position: relative; max-width: 90vw; max-height: 90vh; display: flex; flex-direction: column; align-items: center; justify-content: center; animation: modalFadeIn 0.25s ease-out;">
+        <!-- Header Controls -->
+        <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 0 4px;">
+            <div style="display: flex; align-items: center; gap: 8px; color: #FEF08A; font-weight: 800; font-size: 16px;">
+                <i class="fa-solid fa-image" style="color: #F59E0B;"></i>
+                <span id="lightbox-title">XEM ẢNH TRỰC TIẾP</span>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <a id="lightbox-open-newtab" href="#" target="_blank" class="btn btn-secondary" style="width: auto; padding: 6px 12px; font-size: 12px; text-decoration: none;">
+                    <i class="fa-solid fa-up-right-from-square"></i> Mở Tab Mới
+                </a>
+                <button class="modal-close" onclick="closeImageLightbox()" title="Đóng ngay (Esc / Click ngoài)">&times;</button>
+            </div>
+        </div>
+
+        <!-- Lightbox Image Display -->
+        <img id="lightbox-img" src="" alt="Xem ảnh" style="max-width: 85vw; max-height: 80vh; object-fit: contain; border-radius: 14px; border: 2px solid #F59E0B; box-shadow: 0 0 50px rgba(245, 158, 11, 0.35), 0 20px 50px rgba(0,0,0,0.8); background: #04140F;">
+    </div>
+</div>
+
+<!-- FLOATING AI CHATBOT WIDGET -->
+<div id="ai-chat-widget" style="position: fixed; bottom: 24px; right: 24px; z-index: 2500; display: flex; flex-direction: column; align-items: flex-end;">
+    <!-- Floating Trigger Button -->
+    <button id="ai-chat-btn" onclick="toggleAIChat()" style="background: linear-gradient(135deg, #DC2626 0%, #D97706 50%, #059669 100%); color: #FEF08A; border: 1.5px solid #F59E0B; padding: 12px 18px; border-radius: 30px; font-weight: 800; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 10px; box-shadow: 0 0 25px rgba(245, 158, 11, 0.4), 0 8px 20px rgba(0,0,0,0.6); transition: all 0.3s ease;">
+        <i class="fa-solid fa-robot" style="font-size: 20px; color: #FEF08A;"></i>
+        <span>TRỢ LÝ AI (HỎI ĐÁP)</span>
+        <span style="background: #10B981; width: 10px; height: 10px; border-radius: 50%; display: inline-block; box-shadow: 0 0 8px #10B981;"></span>
+    </button>
+
+    <!-- AI Chat Window Panel -->
+    <div id="ai-chat-panel" style="display: none; width: 400px; max-width: calc(100vw - 32px); height: 560px; max-height: calc(100vh - 100px); background: #08241C; border: 1.5px solid #F59E0B; border-radius: 18px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(245, 158, 11, 0.25); flex-direction: column; overflow: hidden; margin-bottom: 12px; animation: chatFadeUp 0.3s ease-out;">
+        
+        <!-- Header -->
+        <div style="background: linear-gradient(135deg, rgba(6, 78, 59, 0.95) 0%, rgba(4, 120, 87, 0.8) 100%); padding: 14px 18px; border-bottom: 1px dashed rgba(245, 158, 11, 0.4); display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="background: linear-gradient(135deg, #DC2626 0%, #059669 100%); width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; border: 1px solid #F59E0B;">
+                    <i class="fa-solid fa-robot" style="color: #FEF08A; font-size: 18px;"></i>
+                </div>
+                <div>
+                    <div style="font-size: 14px; font-weight: 800; color: #FEF08A;">TRỢ LÝ AI QUẢN LÝ KHO</div>
+                    <div style="font-size: 11px; color: #6EE7B7; display: flex; align-items: center; gap: 5px;">
+                        <span style="background: #10B981; width: 7px; height: 7px; border-radius: 50%; display: inline-block;"></span>
+                        Sẵn Sàng Hỗ Trợ 24/7 (Bộ Công An)
+                    </div>
+                </div>
+            </div>
+            <div style="display: flex; gap: 6px;">
+                <button onclick="resetAIChat()" style="background: transparent; border: none; color: #A7F3D0; font-size: 14px; cursor: pointer; padding: 4px;" title="Xóa lịch sử chat">
+                    <i class="fa-solid fa-rotate-right"></i>
+                </button>
+                <button onclick="toggleAIChat()" style="background: transparent; border: none; color: #A7F3D0; font-size: 18px; cursor: pointer; padding: 4px;" title="Đóng cửa sổ">
+                    &times;
+                </button>
+            </div>
+        </div>
+
+        <!-- Chat Messages Container -->
+        <div id="ai-chat-messages" style="flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; font-size: 13px; line-height: 1.5; background: radial-gradient(circle at center, #0B3327 0%, #04140F 100%);">
+            <!-- Initial Bot Welcome Message -->
+            <div class="bot-msg-row" style="display: flex; gap: 10px; align-items: flex-start;">
+                <div style="background: #059669; width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #FEF08A; font-size: 14px; flex-shrink: 0; border: 1px solid #F59E0B;">
+                    <i class="fa-solid fa-robot"></i>
+                </div>
+                <div style="background: rgba(13, 59, 46, 0.9); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; border-top-left-radius: 2px; padding: 12px 14px; color: #F0FDF4; max-width: 85%;">
+                    🫡 <strong>Chào Cán bộ!</strong> Tôi là Trợ Lý AI Quản Lý Kho. Cán bộ cần tra cứu tồn kho khẩn cấp, xem quy trình xuất kho hay hỗ trợ kỹ thuật gì ạ?
+                </div>
+            </div>
+        </div>
+
+        <!-- Suggestion Chips -->
+        <div id="ai-chat-suggestions" style="padding: 8px 12px; background: rgba(4, 20, 15, 0.9); border-top: 1px solid rgba(16, 185, 129, 0.15); display: flex; gap: 6px; overflow-x: auto; white-space: nowrap;">
+            <button onclick="sendQuickPrompt('Xem tồn kho khẩn cấp')" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #6EE7B7; border-radius: 16px; padding: 4px 10px; font-size: 11px; font-weight: 600; cursor: pointer;">📦 Tồn kho thực tế</button>
+            <button onclick="sendQuickPrompt('Hướng dẫn xuất kho')" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); color: #FBBF24; border-radius: 16px; padding: 4px 10px; font-size: 11px; font-weight: 600; cursor: pointer;">📄 Quy trình xuất kho</button>
+            <button onclick="sendQuickPrompt('Cách quét mã QR di động')" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #FCA5A5; border-radius: 16px; padding: 4px 10px; font-size: 11px; font-weight: 600; cursor: pointer;">📱 Quét mã QR</button>
+            <button onclick="sendQuickPrompt('Sửa file báo cáo đã xuất')" style="background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); color: #93C5FD; border-radius: 16px; padding: 4px 10px; font-size: 11px; font-weight: 600; cursor: pointer;">✏️ Sửa file báo cáo</button>
+        </div>
+
+        <!-- Input Bar -->
+        <form onsubmit="handleSendAIChat(event)" style="display: flex; gap: 8px; padding: 10px 12px; background: #04140F; border-top: 1px solid rgba(16, 185, 129, 0.25);">
+            <input type="text" id="ai-chat-input" placeholder="Nhập thắc mắc cần trợ lý AI giải đáp..." autocomplete="off" style="flex: 1; padding: 10px 12px; font-size: 13px; border-radius: 8px; background: #061F18; border: 1px solid rgba(16, 185, 129, 0.3); color: #F0FDF4;">
+            <button type="submit" id="btn-send-chat" class="btn btn-gold-gradient" style="width: auto; padding: 10px 14px; font-size: 13px;">
+                <i class="fa-solid fa-paper-plane"></i>
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast">
+    <i id="toast-icon" class="fa-solid fa-info-circle"></i>
+    <span id="toast-msg">Thông báo</span>
+</div>
+
+<script>
+    let globalItems = [];
+    let activeDetailItem = null;
+    let activeEditItem = null;
+    let activeHistoryItem = null;
+    let currentRole = localStorage.getItem('user_role') || 'admin';
+    let chartDoughnut = null;
+    let chartBar = null;
+
+    const ALLOWED_IMAGE_EXTS = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp', '.svg'];
+
+    // Default High-Quality Category Fallback Images
+    const DEFAULT_IMAGES = [
+        "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=400&q=80",
+        "https://images.unsplash.com/photo-1517420704952-d9f39e95b43e?auto=format&fit=crop&w=400&q=80",
+        "https://images.unsplash.com/photo-1586075010923-2dd4570fb338?auto=format&fit=crop&w=400&q=80",
+        "https://images.unsplash.com/photo-1526738549149-8e07eca6c147?auto=format&fit=crop&w=400&q=80"
+    ];
+
+    // Image Lightbox Functions
+    function openImageLightbox(imgUrl, titleText = "XEM ẢNH TRỰC TIẾP") {
+        if (!imgUrl) return;
+        const lightboxModal = document.getElementById('image-lightbox-modal');
+        const lightboxImg = document.getElementById('lightbox-img');
+        const lightboxTitle = document.getElementById('lightbox-title');
+        const lightboxNewTab = document.getElementById('lightbox-open-newtab');
+
+        lightboxImg.src = imgUrl;
+        lightboxTitle.textContent = titleText ? `📷 ${titleText.toUpperCase()}` : "XEM ẢNH TRỰC TIẾP";
+        lightboxNewTab.href = imgUrl;
+
+        lightboxModal.style.display = 'flex';
+    }
+
+    function closeImageLightbox() {
+        const lightboxModal = document.getElementById('image-lightbox-modal');
+        if (lightboxModal) lightboxModal.style.display = 'none';
+    }
+
+    function isValidImageFile(file) {
+        if (!file) return false;
+        const ext = '.' + file.name.split('.').pop().toLowerCase();
+        return file.type.startsWith('image/') || ALLOWED_IMAGE_EXTS.includes(ext);
+    }
+
+    function handleUrlInputChange(inputEl, previewId) {
+        const url = inputEl.value.trim();
+        const previewEl = document.getElementById(previewId);
+        if (!url) {
+            if (previewEl) previewEl.style.display = 'none';
+            return;
+        }
+
+        const urlLower = url.toLowerCase();
+        if (!urlLower.startsWith('http://') && !urlLower.startsWith('https://') && !urlLower.startsWith('/uploads/')) {
+            showToast('⚠️ LỖI ĐỊNH DẠNG: URL ảnh phải bắt đầu bằng http://, https:// hoặc /uploads/. Vui lòng chọn/nhập lại link hợp lệ!', 'error');
+            inputEl.value = '';
+            if (previewEl) previewEl.style.display = 'none';
+            return;
+        }
+
+        if (previewEl) {
+            previewEl.src = url;
+            previewEl.style.display = 'block';
+            previewEl.onerror = () => {
+                previewEl.style.display = 'none';
+                showToast('⚠️ LỖI ĐỊNH DẠNG: Link URL không tải được ảnh hợp lệ. Vui lòng dán lại link ảnh khác!', 'error');
+                inputEl.value = '';
+            };
+        }
+    }
+
+    function getAuthHeaders() {
+        return {
+            'Content-Type': 'application/json',
+            'X-User-Role': currentRole
+        };
+    }
+
+    function changeRole(role) {
+        currentRole = role;
+        localStorage.setItem('user_role', role);
+        applyRoleUI();
+        showToast(`Đã chuyển vai trò: ${role === 'admin' ? '👑 Admin (Quản Trị Viên)' : '👤 Cán Bộ / Nhân Viên'}`);
+    }
+
+    function applyRoleUI() {
+        const roleSelect = document.getElementById('role-select');
+        if (roleSelect) roleSelect.value = currentRole;
+
+        const addCard = document.getElementById('card-add-item');
+        const gridLayout = document.getElementById('inventory-grid-layout');
+        const btnPrintQR = document.getElementById('btn-print-qr');
+        const btnExecuteExport = document.getElementById('btn-execute-export');
+        const exportRoleNotice = document.getElementById('export-role-notice');
+        const thActions = document.getElementById('th-actions');
+        const modalImgControls = document.getElementById('modal-admin-image-controls');
+        const thHistoryEdit = document.getElementById('th-history-edit');
+        const btnModalEditItem = document.getElementById('btn-modal-edit-item');
+
+        if (currentRole === 'admin') {
+            if (addCard) addCard.style.display = 'block';
+            if (gridLayout) gridLayout.classList.remove('full-width');
+            if (btnPrintQR) btnPrintQR.style.display = 'inline-flex';
+            if (btnExecuteExport) btnExecuteExport.style.display = 'flex';
+            if (exportRoleNotice) exportRoleNotice.style.display = 'none';
+            if (thActions) thActions.style.display = 'table-cell';
+            if (modalImgControls) modalImgControls.style.display = 'flex';
+            if (thHistoryEdit) thHistoryEdit.style.display = 'table-cell';
+            if (btnModalEditItem) btnModalEditItem.style.display = 'inline-flex';
+        } else {
+            // User mode
+            if (addCard) addCard.style.display = 'none';
+            if (gridLayout) gridLayout.classList.add('full-width');
+            if (btnPrintQR) btnPrintQR.style.display = 'none';
+            if (btnExecuteExport) btnExecuteExport.style.display = 'none';
+            if (exportRoleNotice) exportRoleNotice.style.display = 'block';
+            if (thActions) thActions.style.display = 'none';
+            if (modalImgControls) modalImgControls.style.display = 'none';
+            if (thHistoryEdit) thHistoryEdit.style.display = 'none';
+            if (btnModalEditItem) btnModalEditItem.style.display = 'none';
+        }
+        loadDashboardAnalytics();
+        loadItems();
+        loadAlerts();
+    }
+
+    // Close Modals on Escape Key
+    window.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeImageLightbox();
+            closeModal();
+            closeEditItemModal();
+            closeEditExportModal();
+            closeAuditModal();
+        }
+    });
+
+    // FEATURE A: DASHBOARD ANALYTICS & CHARTS
+    async function loadDashboardAnalytics() {
+        try {
+            const res = await fetch('/api/analytics/dashboard');
+            const data = await res.json();
+
+            // Update KPI cards
+            document.getElementById('kpi-total-items').textContent = data.summary.total_items;
+            document.getElementById('kpi-total-stock').textContent = data.summary.total_stock;
+            document.getElementById('kpi-pending-requests').textContent = data.summary.pending_requests_count;
+            document.getElementById('kpi-low-stock').textContent = data.summary.low_stock_count;
+
+            // Render AI Predictive Alerts Widget
+            const alertsBox = document.getElementById('ai-predictive-alerts-box');
+            if (data.predictive_alerts.length === 0) {
+                alertsBox.innerHTML = `
+                    <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); padding: 12px 16px; border-radius: 10px; color: #6EE7B7; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 10px;">
+                        <i class="fa-solid fa-circle-check" style="font-size: 18px; color: #34D399;"></i>
+                        <span>TẤT CẢ VẬT TƯ KHO ĐANG Ở TRẠNG THÁI AN TOÀN CAO! Không có nguy cơ hết hàng trong 14 ngày tới.</span>
+                    </div>
+                `;
+            } else {
+                alertsBox.innerHTML = data.predictive_alerts.map(a => `
+                    <div style="background: ${a.severity === 'danger' ? 'rgba(220, 38, 38, 0.2)' : 'rgba(245, 158, 11, 0.2)'}; border: 1px solid ${a.severity === 'danger' ? '#EF4444' : '#F59E0B'}; padding: 12px 16px; border-radius: 10px; color: #F0FDF4; font-size: 13px; font-weight: 600; line-height: 1.5;">
+                        ${a.message}
+                    </div>
+                `).join('');
+            }
+
+            // Render Chart.js Breakdown
+            renderCharts(data.items_breakdown);
+
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    function renderCharts(items) {
+        if (!items || items.length === 0) return;
+
+        const labels = items.map(i => i.name);
+        const stocks = items.map(i => i.stock);
+        const colorsList = [
+            '#059669', '#F59E0B', '#DC2626', '#3B82F6', '#8B5CF6', '#EC4899', '#10B981', '#6366F1'
+        ];
+
+        // 1. Doughnut Chart
+        const ctxDoughnut = document.getElementById('chart-stock-breakdown').getContext('2d');
+        if (chartDoughnut) chartDoughnut.destroy();
+        chartDoughnut = new Chart(ctxDoughnut, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: stocks,
+                    backgroundColor: colorsList.slice(0, items.length),
+                    borderColor: '#04140F',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: '#A7F3D0', font: { family: 'Inter', size: 11 } }
+                    }
+                }
+            }
+        });
+
+        // 2. Bar Chart
+        const ctxBar = document.getElementById('chart-stock-bars').getContext('2d');
+        if (chartBar) chartBar.destroy();
+        chartBar = new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: items.map(i => i.code),
+                datasets: [{
+                    label: 'Số Lượng Tồn Kho (Đơn vị tính)',
+                    data: stocks,
+                    backgroundColor: 'rgba(5, 150, 105, 0.7)',
+                    borderColor: '#10B981',
+                    borderWidth: 1.5,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { ticks: { color: '#FEF08A' }, grid: { color: 'rgba(16, 185, 129, 0.1)' } },
+                    y: { ticks: { color: '#A7F3D0' }, grid: { color: 'rgba(16, 185, 129, 0.1)' } }
+                },
+                plugins: {
+                    legend: { labels: { color: '#FEF08A', font: { family: 'Inter' } } }
+                }
+            }
+        });
+    }
+
+    // FEATURE C: ALERTS & SECURITY AUDIT LOGS
+    function toggleAlertsDrawer() {
+        const drawer = document.getElementById('alerts-drawer');
+        const isHidden = drawer.style.display === 'none' || drawer.style.display === '';
+        drawer.style.display = isHidden ? 'block' : 'none';
+        if (isHidden) loadAlerts();
+    }
+
+    async function loadAlerts() {
+        try {
+            const res = await fetch('/api/audit/alerts');
+            const data = await res.json();
+
+            const badgeCount = document.getElementById('alert-badge-count');
+            if (data.total_urgent_count > 0) {
+                badgeCount.textContent = data.total_urgent_count;
+                badgeCount.style.display = 'inline-block';
+            } else {
+                badgeCount.style.display = 'none';
+            }
+
+            const drawerContent = document.getElementById('alerts-drawer-content');
+            if (data.alerts.length === 0) {
+                drawerContent.innerHTML = `<div style="text-align: center; color: #34D399; padding: 10px;">🟢 Không có cảnh báo khẩn cấp nào!</div>`;
+                return;
+            }
+
+            drawerContent.innerHTML = data.alerts.map(a => `
+                <div style="background: rgba(4, 20, 15, 0.8); border: 1px solid ${a.type === 'pending_request' ? '#F59E0B' : '#EF4444'}; padding: 10px; border-radius: 8px; cursor: pointer;" onclick="switchTab('${a.target_tab}', document.querySelectorAll('.tab-btn')[${a.target_tab === 'tab-export' ? 3 : 1}])">
+                    <div style="font-weight: 700; color: ${a.type === 'pending_request' ? '#FEF08A' : '#FCA5A5'}; margin-bottom: 2px;">
+                        ${a.type === 'pending_request' ? '📄' : '⚠️'} ${a.title}
+                    </div>
+                    <div style="font-size: 11px; color: #A7F3D0;">${a.subtitle}</div>
+                </div>
+            `).join('');
+
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    async function openAuditModal() {
+        document.getElementById('audit-log-modal').style.display = 'flex';
+        try {
+            const res = await fetch('/api/audit/logs');
+            const logs = await res.json();
+            const tbody = document.getElementById('audit-logs-table-body');
+
+            if (logs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #A7F3D0;">Chưa có nhật ký bảo mật nào.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = logs.map(l => {
+                const dateStr = new Date(l.created_at).toLocaleString('vi-VN');
+                return `
+                    <tr>
+                        <td style="font-size: 11px; color: #A7F3D0; white-space: nowrap;">${dateStr}</td>
+                        <td style="white-space: nowrap;"><strong style="color: #FEF08A;">${l.user_role.toUpperCase()}</strong></td>
+                        <td style="white-space: nowrap;"><span class="badge-tag badge-exported" style="background: rgba(245,158,11,0.2); color: #FBBF24; border-color: #F59E0B;">${l.action}</span></td>
+                        <td style="white-space: nowrap;"><strong style="color: #6EE7B7;">${l.target}</strong></td>
+                        <td style="font-size: 12px; color: #F0FDF4;">${l.details || ''}</td>
+                    </tr>
+                `;
+            }).join('');
+
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    function closeAuditModal() {
+        document.getElementById('audit-log-modal').style.display = 'none';
+    }
+
+    // AI Chatbot Functions
+    function toggleAIChat() {
+        const panel = document.getElementById('ai-chat-panel');
+        const isHidden = panel.style.display === 'none' || panel.style.display === '';
+        panel.style.display = isHidden ? 'flex' : 'none';
+        if (isHidden) {
+            document.getElementById('ai-chat-input').focus();
+            scrollChatToBottom();
+        }
+    }
+
+    function scrollChatToBottom() {
+        const container = document.getElementById('ai-chat-messages');
+        container.scrollTop = container.scrollHeight;
+    }
+
+    function renderMarkdown(text) {
+        let formatted = text
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/\n/g, '<br/>');
+        return formatted;
+    }
+
+    function appendUserMessage(text) {
+        const container = document.getElementById('ai-chat-messages');
+        const row = document.createElement('div');
+        row.style.cssText = "display: flex; gap: 10px; align-items: flex-start; justify-content: flex-end;";
+        row.innerHTML = `
+            <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); border: 1px solid #10B981; border-radius: 12px; border-top-right-radius: 2px; padding: 10px 14px; color: #F0FDF4; max-width: 85%;">
+                ${escapeHtml(text)}
+            </div>
+            <div style="background: #1E3A34; width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #6EE7B7; font-size: 13px; flex-shrink: 0; border: 1px solid rgba(16,185,129,0.3);">
+                <i class="fa-solid fa-user"></i>
+            </div>
+        `;
+        container.appendChild(row);
+        scrollChatToBottom();
+    }
+
+    function appendBotMessage(text) {
+        const container = document.getElementById('ai-chat-messages');
+        const row = document.createElement('div');
+        row.style.cssText = "display: flex; gap: 10px; align-items: flex-start;";
+        row.innerHTML = `
+            <div style="background: #059669; width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #FEF08A; font-size: 14px; flex-shrink: 0; border: 1px solid #F59E0B;">
+                <i class="fa-solid fa-robot"></i>
+            </div>
+            <div style="background: rgba(13, 59, 46, 0.9); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; border-top-left-radius: 2px; padding: 12px 14px; color: #F0FDF4; max-width: 85%;">
+                ${renderMarkdown(text)}
+            </div>
+        `;
+        container.appendChild(row);
+        scrollChatToBottom();
+    }
+
+    function appendBotTyping() {
+        const container = document.getElementById('ai-chat-messages');
+        const row = document.createElement('div');
+        row.id = 'ai-typing-indicator';
+        row.style.cssText = "display: flex; gap: 10px; align-items: flex-start;";
+        row.innerHTML = `
+            <div style="background: #059669; width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #FEF08A; font-size: 14px; flex-shrink: 0; border: 1px solid #F59E0B;">
+                <i class="fa-solid fa-robot"></i>
+            </div>
+            <div style="background: rgba(13, 59, 46, 0.9); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; border-top-left-radius: 2px; padding: 10px 14px; color: #A7F3D0; font-size: 12px; display: flex; align-items: center; gap: 6px;">
+                <i class="fa-solid fa-circle-notch fa-spin"></i> Trợ lý AI đang tra cứu kho...
+            </div>
+        `;
+        container.appendChild(row);
+        scrollChatToBottom();
+    }
+
+    function removeBotTyping() {
+        const typing = document.getElementById('ai-typing-indicator');
+        if (typing) typing.remove();
+    }
+
+    function renderSuggestions(actions) {
+        const box = document.getElementById('ai-chat-suggestions');
+        if (!actions || actions.length === 0) {
+            box.innerHTML = '';
+            return;
+        }
+        box.innerHTML = actions.map(act => `
+            <button onclick="sendQuickPrompt('${escapeHtml(act)}')" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #6EE7B7; border-radius: 16px; padding: 4px 10px; font-size: 11px; font-weight: 600; cursor: pointer; white-space: nowrap;">
+                👉 ${escapeHtml(act)}
+            </button>
+        `).join('');
+    }
+
+    async function handleSendAIChat(e) {
+        if (e) e.preventDefault();
+        const input = document.getElementById('ai-chat-input');
+        const text = input.value.trim();
+        if (!text) return;
+
+        input.value = '';
+        appendUserMessage(text);
+        appendBotTyping();
+
+        try {
+            const res = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: text })
+            });
+            const data = await res.json();
+            removeBotTyping();
+
+            if (res.ok && data.reply) {
+                appendBotMessage(data.reply);
+                renderSuggestions(data.suggested_actions);
+            } else {
+                appendBotMessage('⚠️ Rất tiếc, đã xảy ra lỗi kết nối với máy chủ AI. Vui lòng thử lại!');
+            }
+        } catch (err) {
+            removeBotTyping();
+            appendBotMessage('⚠️ Lỗi kết nối mạng đến Trợ lý AI.');
+        }
+    }
+
+    function sendQuickPrompt(promptText) {
+        document.getElementById('ai-chat-input').value = promptText;
+        handleSendAIChat();
+    }
+
+    function resetAIChat() {
+        const container = document.getElementById('ai-chat-messages');
+        container.innerHTML = `
+            <div class="bot-msg-row" style="display: flex; gap: 10px; align-items: flex-start;">
+                <div style="background: #059669; width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #FEF08A; font-size: 14px; flex-shrink: 0; border: 1px solid #F59E0B;">
+                    <i class="fa-solid fa-robot"></i>
+                </div>
+                <div style="background: rgba(13, 59, 46, 0.9); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; border-top-left-radius: 2px; padding: 12px 14px; color: #F0FDF4; max-width: 85%;">
+                    🫡 <strong>Đã làm mới cuộc hội thoại!</strong> Cán bộ cần hỗ trợ thông tin gì về kho hàng ạ?
+                </div>
+            </div>
+        `;
+        renderSuggestions(['Xem tồn kho khẩn cấp', 'Hướng dẫn xuất kho', 'Cách quét mã QR di động']);
+    }
+
+    function escapeHtml(str) {
+        return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    // Native Camera & File Picker Controls (iOS & Android)
+    function triggerNativeCamera() {
+        document.getElementById('item-camera-input').click();
+    }
+
+    function triggerNativeFilePicker() {
+        document.getElementById('item-file-input').click();
+    }
+
+    async function handleImageFileSelected(inputEl) {
+        const file = inputEl.files[0];
+        if (!file) return;
+
+        // Image Format Validation
+        if (!isValidImageFile(file)) {
+            showToast(`⚠️ LỖI ĐỊNH DẠNG: Tập tin '${file.name}' KHÔNG PHẢI hình ảnh hợp lệ! Vui lòng chọn file ảnh (JPG, PNG, WEBP).`, 'error');
+            inputEl.value = '';
+            document.getElementById('item-img-preview').style.display = 'none';
+            document.getElementById('upload-status').style.display = 'none';
+            return;
+        }
+
+        const statusEl = document.getElementById('upload-status');
+        const previewEl = document.getElementById('item-img-preview');
+        const urlInput = document.getElementById('item_image');
+
+        statusEl.style.display = 'block';
+        statusEl.style.color = '#34D399';
+        statusEl.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Đang tải ảnh từ thiết bị lên server...';
+
+        // Immediate local preview
+        previewEl.src = URL.createObjectURL(file);
+        previewEl.style.display = 'block';
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const res = await fetch('/api/items/upload-image', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await res.json();
+            if (res.ok && data.url) {
+                urlInput.value = data.url;
+                statusEl.innerHTML = '<i class="fa-solid fa-check-circle"></i> Đã tải ảnh từ máy lên thành công!';
+                statusEl.style.color = '#34D399';
+            } else {
+                showToast(data.detail || 'Lỗi định dạng file ảnh', 'error');
+                statusEl.textContent = data.detail || 'Lỗi khi tải ảnh';
+                statusEl.style.color = '#EF4444';
+                inputEl.value = '';
+                previewEl.style.display = 'none';
+            }
+        } catch (err) {
+            statusEl.textContent = 'Lỗi kết nối server khi tải ảnh';
+            statusEl.style.color = '#EF4444';
+        }
+    }
+
+    // Modal Image Controls
+    function triggerModalCamera() {
+        document.getElementById('modal-camera-input').click();
+    }
+
+    function triggerModalFilePicker() {
+        document.getElementById('modal-file-input').click();
+    }
+
+    async function handleModalImageSelected(inputEl) {
+        if (!activeDetailItem) return;
+        const file = inputEl.files[0];
+        if (!file) return;
+
+        // Image Format Validation
+        if (!isValidImageFile(file)) {
+            showToast(`⚠️ LỖI ĐỊNH DẠNG: Tập tin '${file.name}' KHÔNG PHẢI hình ảnh hợp lệ! Vui lòng chọn file ảnh (JPG, PNG, WEBP).`, 'error');
+            inputEl.value = '';
+            return;
+        }
+
+        showToast('Đang tải hình ảnh mới từ thiết bị lên...');
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const resUpload = await fetch('/api/items/upload-image', {
+                method: 'POST',
+                body: formData
+            });
+            const dataUpload = await resUpload.json();
+
+            if (resUpload.ok && dataUpload.url) {
+                // Update item in database
+                const resUpdate = await fetch(`/api/items/${activeDetailItem.id}`, {
+                    method: 'PUT',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ image_url: dataUpload.url })
+                });
+
+                if (resUpdate.ok) {
+                    showToast('Đã cập nhật hình ảnh vật tư thành công!');
+                    activeDetailItem.image_url = dataUpload.url;
+                    document.getElementById('detail-img-preview').src = dataUpload.url;
+                    loadItems();
+                } else {
+                    showToast('Lỗi cập nhật ảnh vào cơ sở dữ liệu', 'error');
+                }
+            } else {
+                showToast(dataUpload.detail || 'Lỗi định dạng ảnh', 'error');
+                inputEl.value = '';
+            }
+        } catch (err) {
+            showToast('Lỗi kết nối khi tải ảnh', 'error');
+        }
+    }
+
+    // Tab Switching
+    function switchTab(tabId, element) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        if (element) element.classList.add('active');
+
+        if (tabId === 'tab-dashboard') loadDashboardAnalytics();
+        if (tabId === 'tab-inventory') loadItems();
+        if (tabId === 'tab-requests') { loadItems(); loadRequests(); }
+        if (tabId === 'tab-export') { loadExportSelect(); loadExportHistory(); }
+    }
+
+    function showToast(message, type = 'success') {
+        const toast = document.getElementById('toast');
+        const msg = document.getElementById('toast-msg');
+        const icon = document.getElementById('toast-icon');
+        
+        msg.textContent = message;
+        if (type === 'error') {
+            toast.style.borderColor = '#EF4444';
+            icon.className = 'fa-solid fa-circle-exclamation';
+            icon.style.color = '#EF4444';
+        } else {
+            toast.style.borderColor = '#059669';
+            icon.className = 'fa-solid fa-circle-check';
+            icon.style.color = '#34D399';
+        }
+
+        toast.style.display = 'flex';
+        setTimeout(() => { toast.style.display = 'none'; }, 3500);
+    }
+
+    // Load Items Inventory
+    async function loadItems() {
+        try {
+            const query = document.getElementById('search-item')?.value || '';
+            const res = await fetch(`/api/items?search=${encodeURIComponent(query)}`);
+            const items = await res.json();
+            globalItems = items;
+
+            const tbody = document.getElementById('items-table-body');
+            if (items.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="${currentRole === 'admin' ? 6 : 5}" style="text-align: center; color: #A7F3D0;">Chưa có vật tư nào trong kho. Nhấn "Nạp Dữ Liệu Mẫu" ở góc trên để khởi tạo nhanh!</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = items.map((item, idx) => {
+                const imgUrl = item.image_url || DEFAULT_IMAGES[idx % DEFAULT_IMAGES.length];
+                return `
+                <tr class="item-row" onclick="openDetailModal(${item.id})">
+                    <td style="width: 50px;">
+                        <img src="${imgUrl}" class="item-thumbnail" alt="${item.name}" onerror="this.src='${DEFAULT_IMAGES[0]}'" onclick="event.stopPropagation(); openImageLightbox('${imgUrl}', '${item.name}')" title="Bấm xem ảnh phóng to">
+                    </td>
+                    <td style="white-space: nowrap;"><strong style="color: #FEF08A;">${item.item_code}</strong></td>
+                    <td>
+                        <span class="item-name-clickable">
+                            <i class="fa-solid fa-circle-info" style="font-size: 13px;"></i> ${item.name}
+                        </span>
+                    </td>
+                    <td>${item.unit}</td>
+                    <td><strong style="font-size: 15px; color: ${item.current_stock < 10 ? '#EF4444' : '#34D399'};">${item.current_stock}</strong></td>
+                    ${currentRole === 'admin' ? `
+                    <td onclick="event.stopPropagation()" style="white-space: nowrap;">
+                        <div style="display: flex; gap: 6px;">
+                            <button class="btn btn-gold-gradient" onclick="openEditItemModal(${item.id})" style="padding: 4px 8px; font-size: 12px; width: auto;">
+                                <i class="fa-solid fa-pen-to-square"></i> Sửa
+                            </button>
+                            <button class="btn btn-danger-gradient" onclick="deleteItem(${item.id})" style="padding: 4px 8px; font-size: 12px; width: auto;">
+                                <i class="fa-solid fa-trash"></i> Xóa
+                            </button>
+                        </div>
+                    </td>
+                    ` : ''}
+                </tr>
+            `}).join('');
+
+            updateItemSelectOptions();
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    function openDetailModal(itemId) {
+        const item = globalItems.find(i => i.id === itemId);
+        if (!item) return;
+        activeDetailItem = item;
+
+        const idx = globalItems.indexOf(item);
+        const imgUrl = item.image_url || DEFAULT_IMAGES[idx % DEFAULT_IMAGES.length];
+
+        document.getElementById('detail-code').textContent = item.item_code;
+        document.getElementById('detail-name').textContent = item.name;
+        document.getElementById('detail-unit').textContent = item.unit;
+        document.getElementById('detail-stock').textContent = `${item.current_stock} ${item.unit}`;
+        
+        const imgEl = document.getElementById('detail-img-preview');
+        imgEl.src = imgUrl;
+        imgEl.onerror = () => { imgEl.src = DEFAULT_IMAGES[0]; };
+
+        // Generate QR Code URL
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(item.item_code)}`;
+        document.getElementById('detail-qr-preview').src = qrUrl;
+
+        // Stock status badge
+        const statusEl = document.getElementById('detail-status');
+        if (item.current_stock <= 0) {
+            statusEl.className = "badge-tag badge-pending";
+            statusEl.style.color = "#EF4444";
+            statusEl.textContent = "CẢNH BÁO: HẾT HÀNG KHO";
+        } else if (item.current_stock < 10) {
+            statusEl.className = "badge-tag badge-pending";
+            statusEl.style.color = "#F59E0B";
+            statusEl.textContent = "CẢNH BÁO: SẮP HẾT HÀNG";
+        } else {
+            statusEl.className = "badge-tag badge-exported";
+            statusEl.textContent = "An Toàn (Sẵn Sàng Xuất)";
+        }
+
+        document.getElementById('item-detail-modal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('item-detail-modal').style.display = 'none';
+        activeDetailItem = null;
+    }
+
+    function openEditItemModalFromDetail() {
+        if (!activeDetailItem) return;
+        const id = activeDetailItem.id;
+        closeModal();
+        openEditItemModal(id);
+    }
+
+    // Edit Item Modal Functions
+    function openEditItemModal(itemId) {
+        const item = globalItems.find(i => i.id === itemId);
+        if (!item) return;
+        activeEditItem = item;
+
+        document.getElementById('edit-item-id').value = item.id;
+        document.getElementById('edit-item-code').value = item.item_code;
+        document.getElementById('edit-item-name').value = item.name;
+        document.getElementById('edit-item-unit').value = item.unit;
+        document.getElementById('edit-item-stock').value = item.current_stock;
+        document.getElementById('edit-item-image').value = item.image_url || '';
+
+        const previewEl = document.getElementById('edit-item-img-preview');
+        if (item.image_url) {
+            previewEl.src = item.image_url;
+            previewEl.style.display = 'block';
+        } else {
+            previewEl.style.display = 'none';
+        }
+
+        document.getElementById('edit-item-modal').style.display = 'flex';
+    }
+
+    function closeEditItemModal() {
+        document.getElementById('edit-item-modal').style.display = 'none';
+        activeEditItem = null;
+    }
+
+    function triggerEditItemCamera() {
+        document.getElementById('edit-item-camera-input').click();
+    }
+
+    function triggerEditItemFilePicker() {
+        document.getElementById('edit-item-file-input').click();
+    }
+
+    async function handleEditItemImageSelected(inputEl) {
+        const file = inputEl.files[0];
+        if (!file) return;
+
+        // Image Format Validation
+        if (!isValidImageFile(file)) {
+            showToast(`⚠️ LỖI ĐỊNH DẠNG: Tập tin '${file.name}' KHÔNG PHẢI hình ảnh hợp lệ! Vui lòng chọn file ảnh (JPG, PNG, WEBP).`, 'error');
+            inputEl.value = '';
+            document.getElementById('edit-item-img-preview').style.display = 'none';
+            return;
+        }
+
+        showToast('Đang tải ảnh từ thiết bị lên...');
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const res = await fetch('/api/items/upload-image', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+            if (res.ok && data.url) {
+                document.getElementById('edit-item-image').value = data.url;
+                const previewEl = document.getElementById('edit-item-img-preview');
+                previewEl.src = data.url;
+                previewEl.style.display = 'block';
+                showToast('Tải ảnh thành công!');
+            } else {
+                showToast(data.detail || 'Lỗi định dạng ảnh', 'error');
+                inputEl.value = '';
+            }
+        } catch (err) {
+            showToast('Lỗi kết nối server', 'error');
+        }
+    }
+
+    async function handleSaveEditItem(e) {
+        e.preventDefault();
+        const id = document.getElementById('edit-item-id').value;
+        const imgUrl = document.getElementById('edit-item-image').value.trim() || null;
+
+        const payload = {
+            name: document.getElementById('edit-item-name').value,
+            unit: document.getElementById('edit-item-unit').value,
+            current_stock: parseInt(document.getElementById('edit-item-stock').value),
+            image_url: imgUrl
+        };
+
+        const res = await fetch(`/api/items/${id}`, {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+            showToast('Đã cập nhật thông tin vật tư thành công!');
+            closeEditItemModal();
+            loadDashboardAnalytics();
+            loadItems();
+            loadAlerts();
+        } else {
+            const err = await res.json();
+            showToast(err.detail || 'Lỗi khi cập nhật vật tư', 'error');
+        }
+    }
+
+    function quickCreateRequestFromDetail() {
+        if (!activeDetailItem) return;
+        closeModal();
+        // Switch to Tab 2
+        const tabBtn = document.querySelectorAll('.tab-btn')[2];
+        switchTab('tab-requests', tabBtn);
+        // Select this item in the dropdown
+        const sel = document.querySelector('.req-item-select');
+        if (sel) sel.value = activeDetailItem.id;
+    }
+
+    function updateItemSelectOptions() {
+        const selects = document.querySelectorAll('.req-item-select');
+        selects.forEach(select => {
+            const currentVal = select.value;
+            select.innerHTML = globalItems.map(i => `
+                <option value="${i.id}">${i.item_code} - ${i.name} (Tồn: ${i.current_stock} ${i.unit})</option>
+            `).join('');
+            if (currentVal) select.value = currentVal;
+        });
+    }
+
+    async function handleAddItem(e) {
+        e.preventDefault();
+        const imgUrl = document.getElementById('item_image').value.trim() || null;
+
+        const payload = {
+            item_code: document.getElementById('item_code').value,
+            name: document.getElementById('item_name').value,
+            unit: document.getElementById('item_unit').value,
+            current_stock: parseInt(document.getElementById('item_stock').value),
+            image_url: imgUrl
+        };
+
+        const res = await fetch('/api/items', {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+            showToast('Đã thêm vật tư mới vào kho thành công!');
+            document.getElementById('form-add-item').reset();
+            document.getElementById('item-img-preview').style.display = 'none';
+            document.getElementById('upload-status').style.display = 'none';
+            loadDashboardAnalytics();
+            loadItems();
+            loadAlerts();
+        } else {
+            const err = await res.json();
+            showToast(err.detail || 'Lỗi thêm vật tư', 'error');
+        }
+    }
+
+    async function deleteItem(id) {
+        if (!confirm('Bạn có chắc chắn muốn XÓA vật tư này khỏi hệ thống kho?')) return;
+        const res = await fetch(`/api/items/${id}`, { 
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
+        if (res.ok) {
+            showToast('Đã xóa hoàn toàn vật tư khỏi hệ thống kho!');
+            loadDashboardAnalytics();
+            loadItems();
+            loadAlerts();
+        } else {
+            const err = await res.json();
+            showToast(err.detail || 'Lỗi khi xóa', 'error');
+        }
+    }
+
+    function addRequestItemRow() {
+        const container = document.getElementById('request-item-rows');
+        const div = document.createElement('div');
+        div.className = 'form-group';
+        div.style.display = 'flex';
+        div.style.gap = '8px';
+        div.innerHTML = `
+            <select class="req-item-select" required></select>
+            <input type="number" class="req-item-qty" placeholder="Số lượng" min="1" value="5" style="width: 110px;" required>
+            <button type="button" class="btn btn-secondary" onclick="this.parentElement.remove()" style="width: auto; padding: 0 10px;">&times;</button>
+        `;
+        container.appendChild(div);
+        updateItemSelectOptions();
+    }
+
+    async function handleCreateRequest(e) {
+        e.preventDefault();
+        const name = document.getElementById('requester_name').value;
+        const dest = document.getElementById('destination').value;
+        const reas = document.getElementById('reason').value;
+        const selects = document.querySelectorAll('.req-item-select');
+        const qtys = document.querySelectorAll('.req-item-qty');
+        
+        const items = [];
+        selects.forEach((sel, idx) => {
+            if (sel.value) {
+                items.push({
+                    item_id: parseInt(sel.value),
+                    quantity: parseInt(qtys[idx].value)
+                });
+            }
+        });
+
+        const res = await fetch('/api/requests', {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ 
+                requester_name: name,
+                destination: dest,
+                reason: reas,
+                items: items 
+            })
+        });
+
+        if (res.ok) {
+            showToast('Đã lập phiếu yêu cầu xuất kho thành công!');
+            document.getElementById('form-add-request').reset();
+            loadRequests();
+            loadAlerts();
+        } else {
+            const err = await res.json();
+            showToast(err.detail || 'Lỗi tạo phiếu', 'error');
+        }
+    }
+
+    async function loadRequests() {
+        try {
+            const res = await fetch('/api/requests');
+            const requests = await res.json();
+            const tbody = document.getElementById('requests-table-body');
+
+            if (requests.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #A7F3D0;">Chưa có phiếu yêu cầu nào.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = requests.map(r => {
+                const detailsStr = r.details.map(d => `${d.item ? d.item.name : 'Vật tư #' + d.item_id}: <strong style="color:#FEF08A;">${d.quantity} ${d.item ? d.item.unit : ''}</strong>`).join('<br/>');
+                const statusBadge = r.status === 'exported' 
+                    ? `<span class="badge-tag badge-exported"><i class="fa-solid fa-circle-check"></i> Đã xuất kho</span>`
+                    : `<span class="badge-tag badge-pending"><i class="fa-solid fa-clock"></i> Chờ xuất</span>`;
+                
+                const dateStr = new Date(r.created_at).toLocaleString('vi-VN');
+
+                return `
+                    <tr>
+                        <td style="white-space: nowrap;"><strong style="color: #FEF08A;">#PXK-${r.id}</strong></td>
+                        <td><strong>${r.requester_name}</strong></td>
+                        <td style="color: #6EE7B7;">${r.destination || 'N/A'}</td>
+                        <td style="font-size: 13px; color: #A7F3D0;">${r.reason || 'N/A'}</td>
+                        <td style="font-size: 13px;">${detailsStr}</td>
+                        <td style="white-space: nowrap;">${statusBadge}</td>
+                        <td style="font-size: 12px; color: #A7F3D0; white-space: nowrap;">${dateStr}</td>
+                    </tr>
+                `;
+            }).join('');
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    async function loadExportSelect() {
+        const res = await fetch('/api/requests');
+        const requests = await res.json();
+        const select = document.getElementById('export-request-select');
+
+        select.innerHTML = '<option value="">-- Chọn phiếu cần xuất kho --</option>' + 
+            requests.map(r => `
+                <option value="${r.id}" ${r.status === 'exported' ? 'disabled' : ''}>
+                    #PXK-${r.id} - ${r.requester_name} ➔ ${r.destination || 'Nơi nhận'} (${r.status === 'exported' ? 'ĐÃ XUẤT KHO' : 'SẴN SÀNG XUẤT'})
+                </option>
+            `).join('');
+    }
+
+    async function executeExport() {
+        const request_id = document.getElementById('export-request-select').value;
+        if (!request_id) {
+            showToast('Vui lòng chọn phiếu cần xuất kho!', 'error');
+            return;
+        }
+
+        const res = await fetch('/api/export', {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ request_id: parseInt(request_id) })
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+            showToast('Xuất kho & tạo bộ 3 file báo cáo thành công!');
+            
+            document.getElementById('export-result').style.display = 'block';
+            document.getElementById('export-msg-title').textContent = data.message;
+            document.getElementById('export-msg-desc').textContent = `Mã phiếu #${data.request_id} - ${data.requester_name}`;
+
+            document.getElementById('link-pdf').href = data.files.pdf;
+            document.getElementById('link-excel').href = data.files.excel;
+            document.getElementById('link-word').href = data.files.word;
+
+            loadExportSelect();
+            loadDashboardAnalytics();
+            loadItems();
+            loadExportHistory();
+            loadAlerts();
+        } else {
+            showToast(data.detail || 'Lỗi xuất kho', 'error');
+        }
+    }
+
+    // Export History Functions (Rendered in Right Panel)
+    async function loadExportHistory() {
+        try {
+            const res = await fetch('/api/export/history');
+            const historyList = await res.json();
+            const tbody = document.getElementById('export-history-table-body');
+
+            if (historyList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="${currentRole === 'admin' ? 5 : 4}" style="text-align: center; color: #A7F3D0;">Chưa có lịch sử xuất kho nào.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = historyList.map(item => {
+                const dateStr = new Date(item.exported_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) + ' ' + new Date(item.exported_at).toLocaleDateString('vi-VN');
+                return `
+                    <tr>
+                        <td style="white-space: nowrap;"><strong style="color: #FEF08A;">#PXK-${item.id}</strong></td>
+                        <td>
+                            <strong style="color: #F0FDF4;">${item.requester_name}</strong>
+                            <div style="font-size: 11px; color: #6EE7B7;">➔ ${item.destination || 'N/A'}</div>
+                        </td>
+                        <td style="font-size: 11px; color: #A7F3D0; white-space: nowrap;">${dateStr}</td>
+                        <td>
+                            <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                                <a href="${item.files.pdf}" target="_blank" class="btn btn-secondary" style="padding: 3px 6px; font-size: 10px; width: auto; color: #EF4444; border-color: rgba(239,68,68,0.4); text-decoration: none;">
+                                    <i class="fa-solid fa-file-pdf"></i> PDF
+                                </a>
+                                <a href="${item.files.excel}" target="_blank" class="btn btn-secondary" style="padding: 3px 6px; font-size: 10px; width: auto; color: #10B981; border-color: rgba(16,185,129,0.4); text-decoration: none;">
+                                    <i class="fa-solid fa-file-excel"></i> Excel
+                                </a>
+                                <a href="${item.files.word}" target="_blank" class="btn btn-secondary" style="padding: 3px 6px; font-size: 10px; width: auto; color: #3B82F6; border-color: rgba(59,130,246,0.4); text-decoration: none;">
+                                    <i class="fa-solid fa-file-word"></i> Word
+                                </a>
+                                <!-- Feature B: 1-Click ZIP Archive Download -->
+                                <a href="/api/export/history/${item.id}/zip" target="_blank" class="btn btn-gold-gradient" style="padding: 3px 6px; font-size: 10px; width: auto; text-decoration: none;">
+                                    <i class="fa-solid fa-file-zipper"></i> ZIP Hồ Sơ
+                                </a>
+                            </div>
+                        </td>
+                        ${currentRole === 'admin' ? `
+                        <td style="white-space: nowrap;">
+                            <button class="btn btn-gold-gradient" onclick="openEditExportModal(${item.id})" style="padding: 4px 8px; font-size: 10px; width: auto;">
+                                <i class="fa-solid fa-pen-to-square"></i> Sửa
+                            </button>
+                        </td>
+                        ` : ''}
+                    </tr>
+                `;
+            }).join('');
+
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    function openEditExportModal(id) {
+        fetch('/api/export/history')
+            .then(res => res.json())
+            .then(historyList => {
+                const item = historyList.find(h => h.id === id);
+                if (!item) return;
+                activeHistoryItem = item;
+
+                document.getElementById('edit-export-id').value = item.id;
+                document.getElementById('edit-export-code').value = `#PXK-${item.id}`;
+                document.getElementById('edit-requester-name').value = item.requester_name || '';
+                document.getElementById('edit-destination').value = item.destination || '';
+                document.getElementById('edit-reason').value = item.reason || '';
+
+                document.getElementById('edit-export-modal').style.display = 'flex';
+            });
+    }
+
+    function closeEditExportModal() {
+        document.getElementById('edit-export-modal').style.display = 'none';
+        activeHistoryItem = null;
+    }
+
+    async function handleSaveEditExport(e) {
+        e.preventDefault();
+        const id = document.getElementById('edit-export-id').value;
+        const requester = document.getElementById('edit-requester-name').value;
+        const dest = document.getElementById('edit-destination').value;
+        const reas = document.getElementById('edit-reason').value;
+
+        showToast('Đang cập nhật thông tin và tạo lại 3 file báo cáo...');
+
+        const res = await fetch(`/api/export/history/${id}`, {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({
+                requester_name: requester,
+                destination: dest,
+                reason: reas
+            })
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+            showToast('Đã sửa thông tin & tạo lại bộ file báo cáo thành công!');
+            closeEditExportModal();
+            loadExportHistory();
+        } else {
+            showToast(data.detail || 'Lỗi khi cập nhật file', 'error');
+        }
+    }
+
+    // Seed Sample Data for 1-Click fast test
+    async function seedSampleData() {
+        try {
+            // Add Sample Items with Images
+            await fetch('/api/items', {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ 
+                    item_code: 'VT-CA01', 
+                    name: 'Bộ Đàm Motorola GP328 Chuyên Dụng', 
+                    unit: 'Bộ', 
+                    current_stock: 30,
+                    image_url: 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=400&q=80'
+                })
+            });
+            await fetch('/api/items', {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ 
+                    item_code: 'VT-CA02', 
+                    name: 'Đèn Pin Siêu Sáng Đuốc Tuần Tra', 
+                    unit: 'Cái', 
+                    current_stock: 50,
+                    image_url: 'https://images.unsplash.com/photo-1517420704952-d9f39e95b43e?auto=format&fit=crop&w=400&q=80'
+                })
+            });
+            await fetch('/api/items', {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ 
+                    item_code: 'VT-CA03', 
+                    name: 'Giấy In Báo Cáo A4 Chống Ẩm', 
+                    unit: 'Ram', 
+                    current_stock: 100,
+                    image_url: 'https://images.unsplash.com/photo-1586075010923-2dd4570fb338?auto=format&fit=crop&w=400&q=80'
+                })
+            });
+
+            // Add Sample Request with destination and reason
+            const reqRes = await fetch('/api/requests', {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({
+                    requester_name: 'Đại úy Phạm Văn B (Phòng Kỹ Thuật)',
+                    destination: 'Đội Cảnh Sát Giao Thông Số 1 - Công An Tỉnh',
+                    reason: 'Trang bị phục vụ công tác tuần tra kiểm soát giao thông khẩn cấp',
+                    items: [
+                        { item_id: 1, quantity: 5 },
+                        { item_id: 2, quantity: 10 }
+                    ]
+                })
+            });
+
+            if (reqRes.ok) {
+                const reqData = await reqRes.json();
+                // Execute export to seed 1 exported request in history
+                await fetch('/api/export', {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ request_id: reqData.id })
+                });
+            }
+
+            showToast('Đã nạp dữ liệu mẫu phiếu xuất kho & sinh bộ file lịch sử!');
+            loadDashboardAnalytics();
+            loadItems();
+            loadRequests();
+            loadExportSelect();
+            loadExportHistory();
+            loadAlerts();
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    // Initial Load & Apply Role
+    applyRoleUI();
+</script>
+
+</body>
+</html>

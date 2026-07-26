@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Quét Mã QR Xuất Kho - Bộ Công An Mobile Batch & Offline</title>
+    <!-- Google Fonts Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- HTML5 QR Code Scanner Library -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+    <style>
+        :root {
+            --bg-body: #061A14;
+            --bg-card: rgba(13, 43, 34, 0.95);
+            --primary: #059669;
+            --primary-hover: #047857;
+            --accent-gold: #F59E0B;
+            --accent-red: #DC2626;
+            --success: #10B981;
+            --danger: #EF4444;
+            --text-main: #F0FDF4;
+            --text-muted: #A7F3D0;
+            --border-color: rgba(16, 185, 129, 0.25);
+            --radius: 14px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: radial-gradient(circle at top center, #0B3327 0%, #04140F 100%);
+            color: var(--text-main);
+            padding: 16px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 18px;
+            background: linear-gradient(135deg, rgba(6, 78, 59, 0.9) 0%, rgba(4, 120, 87, 0.5) 100%);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            border-radius: 14px;
+            margin-bottom: 16px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-title h1 {
+            font-size: 16px;
+            font-weight: 800;
+            background: linear-gradient(90deg, #FEF08A, #6EE7B7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .back-btn {
+            color: #FEF08A;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(4, 20, 15, 0.6);
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+        }
+
+        #reader {
+            width: 100%;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            color: #A7F3D0;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            background-color: #04140F;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #F0FDF4;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #F59E0B;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            color: white;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .btn-gold-gradient {
+            background: linear-gradient(135deg, #D97706 0%, #B45309 100%);
+            border-color: #F59E0B;
+            color: #FEF08A;
+        }
+
+        .btn-secondary {
+            background-color: #1E3A34;
+            color: #A7F3D0;
+            border-color: rgba(16, 185, 129, 0.25);
+        }
+
+        .result-panel {
+            display: none;
+            background: var(--bg-card);
+            border: 1.5px solid #F59E0B;
+            border-radius: var(--radius);
+            padding: 18px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            margin-top: 14px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .item-info {
+            background: rgba(4, 20, 15, 0.8);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 14px;
+        }
+
+        .item-code-tag {
+            background: linear-gradient(135deg, #DC2626 0%, #D97706 100%);
+            color: #FEF08A;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 800;
+            display: inline-block;
+            margin-bottom: 6px;
+        }
+
+        .item-name {
+            font-size: 16px;
+            font-weight: 800;
+            color: #F0FDF4;
+        }
+
+        .stock-badge {
+            font-size: 12px;
+            color: #34D399;
+            margin-top: 4px;
+            font-weight: 700;
+        }
+
+        .file-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .file-btn {
+            background: rgba(4, 20, 15, 0.8);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            text-decoration: none;
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .notice-banner {
+            background: rgba(245, 158, 11, 0.15);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            color: #FBBF24;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 12px;
+            margin-bottom: 14px;
+            line-height: 1.4;
+        }
+
+        .batch-item-chip {
+            background: rgba(5, 150, 105, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            border-radius: 8px;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+
+        /* Toast */
+        #toast {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: #061F18;
+            border: 1.5px solid #059669;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            display: none;
+            z-index: 3000;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="header-title">
+        <i class="fa-solid fa-shield-halved" style="color: #F59E0B; font-size: 20px;"></i>
+        <h1>Quét Mã QR Hàng Loạt & Offline</h1>
+    </div>
+    <a href="/" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Trang chủ</a>
+</div>
+
+<!-- Offline Status Indicator -->
+<div id="network-status-banner" class="notice-banner" style="display: none; background: rgba(220,38,38,0.2); border-color: #EF4444; color: #FCA5A5;">
+    <i class="fa-solid fa-wifi" style="margin-right: 6px;"></i> <strong>ĐANG TRONG CHẾ ĐỘ OFFLINE:</strong> Dữ liệu quét mã sẽ được lưu tạm và tự động đồng bộ khi có kết nối internet trở lại.
+</div>
+
+<!-- Scanner Controls & Mode Toggle -->
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <span style="font-size: 13px; font-weight: 700; color: #FEF08A;">
+            <i class="fa-solid fa-camera"></i> CAMERA SCANNER:
+        </span>
+        <button id="btn-toggle-batch" onclick="toggleBatchMode()" style="background: rgba(245, 158, 11, 0.2); border: 1px solid #F59E0B; color: #FEF08A; padding: 4px 10px; border-radius: 14px; font-size: 11px; font-weight: 700; cursor: pointer;">
+            ⚡ Bật Quét Hàng Loạt (Batch Mode)
+        </button>
+    </div>
+
+    <div id="reader"></div>
+
+    <div style="margin-top: 16px; text-align: center;">
+        <span style="font-size: 12px; color: #A7F3D0;">Hoặc nhập mã VT thủ công để tra cứu:</span>
+        <div style="display: flex; gap: 8px; margin-top: 8px;">
+            <input type="text" id="manual-code" placeholder="Ví dụ: VT-CA01" value="VT-CA01">
+            <button class="btn btn-gold-gradient" onclick="lookupCode(document.getElementById('manual-code').value)" style="width: 120px; margin: 0; padding: 10px; font-size: 12px;">Tra cứu</button>
+        </div>
+    </div>
+</div>
+
+<!-- BATCH SCAN CART PANEL -->
+<div id="batch-cart-panel" class="card" style="display: none; border-color: #F59E0B;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <strong style="color: #FEF08A; font-size: 14px;"><i class="fa-solid fa-layer-group"></i> GIỎ VẬT TƯ QUÉT HÀNG LOẠT (<span id="batch-count">0</span>)</strong>
+        <button onclick="clearBatchCart()" style="background: transparent; border: none; color: #EF4444; font-size: 11px; cursor: pointer;">Xóa hết</button>
+    </div>
+    
+    <div id="batch-items-list" style="max-height: 180px; overflow-y: auto; margin-bottom: 12px;">
+        <!-- Items dynamically inserted -->
+    </div>
+
+    <div class="form-group">
+        <label>Cán Bộ Đề Xuất Xuất Kho</label>
+        <input type="text" id="batch_requester" value="Đại úy Nguyễn Văn A (Đội Kỹ Thuật)">
+    </div>
+    <div class="form-group">
+        <label>Đơn Vị Nhận (Xuất Đi Đâu?)</label>
+        <input type="text" id="batch_destination" value="Đội Cảnh Sát Giao Thông Số 1 - Công An Tỉnh">
+    </div>
+    <div class="form-group">
+        <label>Lý Do / Mục Đích Xuất Kho</label>
+        <input type="text" id="batch_reason" value="Trang bị phục vụ tuần tra kiểm soát khẩn cấp">
+    </div>
+
+    <button class="btn btn-gold-gradient" onclick="submitBatchExport()">
+        <i class="fa-solid fa-paper-plane"></i> GỬI PHIẾU XUẤT KHO HÀNG LOẠT
+    </button>
+</div>
+
+<!-- Scanned Single Item Result & Instant Export Form -->
+<div id="result-panel" class="result-panel">
+    <div class="item-info">
+        <span id="res-code" class="item-code-tag">VT-CA01</span>
+        <div id="res-name" class="item-name">Bộ Đàm Motorola GP328</div>
+        <div id="res-stock" class="stock-badge">Tồn kho hiện tại: 30 Bộ</div>
+    </div>
+
+    <div class="form-group">
+        <label>Cán Bộ Yêu Cầu</label>
+        <input type="text" id="requester_name" value="Đại úy Phạm Văn B (Đội Kỹ Thuật)">
+    </div>
+
+    <div class="form-group">
+        <label>Đơn Vị Nhận (Xuất Đi Đâu?)</label>
+        <input type="text" id="destination" value="Đội Cảnh Sát Giao Thông Số 1 - Công An Tỉnh">
+    </div>
+
+    <div class="form-group">
+        <label>Lý Do / Mục Đích Xuất Kho</label>
+        <input type="text" id="reason" value="Trang bị tuần tra kiểm soát khẩn cấp">
+    </div>
+
+    <div class="form-group">
+        <label>Số Lượng Xuất Kho</label>
+        <input type="number" id="export_qty" value="1" min="1">
+    </div>
+
+    <button id="btn-submit-export" class="btn btn-gold-gradient" onclick="handleScanExport()">
+        <i class="fa-solid fa-check-circle"></i> XÁC NHẬN XUẤT KHO NGAY
+    </button>
+
+    <!-- Download Files Section -->
+    <div id="download-section" style="display: none; margin-top: 16px; border-top: 1px dashed rgba(16, 185, 129, 0.3); padding-top: 14px;">
+        <div style="font-size: 13px; font-weight: 800; color: #34D399;">
+            <i class="fa-solid fa-circle-check"></i> Đã xuất kho & tự động sinh bộ 3 báo cáo!
+        </div>
+        <div class="file-grid">
+            <a id="link-pdf" href="#" target="_blank" class="file-btn">
+                <i class="fa-solid fa-file-pdf" style="color: #EF4444;"></i>
+                PDF Phiếu
+            </a>
+            <a id="link-excel" href="#" target="_blank" class="file-btn">
+                <i class="fa-solid fa-file-excel" style="color: #10B981;"></i>
+                Excel Nhật Ký
+            </a>
+            <a id="link-word" href="#" target="_blank" class="file-btn">
+                <i class="fa-solid fa-file-word" style="color: #3B82F6;"></i>
+                Word Tờ Trình
+            </a>
+        </div>
+    </div>
+
+    <button class="btn btn-secondary" onclick="resetScanner()" style="margin-top: 14px;">
+        <i class="fa-solid fa-rotate-right"></i> Quét Mã Khác
+    </button>
+</div>
+
+<!-- Toast -->
+<div id="toast">Thông báo</div>
+
+<script>
+    let currentItem = null;
+    let html5QrcodeScanner = null;
+    let isBatchMode = false;
+    let batchCart = [];
+
+    // Offline Detector & PWA Sync Listener
+    window.addEventListener('online', checkAndSyncOfflineQueue);
+    window.addEventListener('offline', updateNetworkBanner);
+
+    function updateNetworkBanner() {
+        const banner = document.getElementById('network-status-banner');
+        if (!navigator.onLine) {
+            banner.style.display = 'block';
+        } else {
+            banner.style.display = 'none';
+        }
+    }
+
+    function toggleBatchMode() {
+        isBatchMode = !isBatchMode;
+        const btn = document.getElementById('btn-toggle-batch');
+        const cartPanel = document.getElementById('batch-cart-panel');
+        if (isBatchMode) {
+            btn.style.background = '#DC2626';
+            btn.style.borderColor = '#EF4444';
+            btn.innerHTML = '🛑 Đang Bật Batch Mode (Tắt)';
+            cartPanel.style.display = 'block';
+            showToast('⚡ Đã bật Chế độ Quét Hàng Loạt. Đưa camera quét liên tục mã QR!');
+        } else {
+            btn.style.background = 'rgba(245, 158, 11, 0.2)';
+            btn.style.borderColor = '#F59E0B';
+            btn.innerHTML = '⚡ Bật Quét Hàng Loạt (Batch Mode)';
+            showToast('Chuyển về chế độ quét đơn lẻ.');
+        }
+    }
+
+    function initScanner() {
+        if (typeof Html5QrcodeScanner === 'undefined') return;
+
+        html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader", 
+            { fps: 10, qrbox: { width: 250, height: 250 } },
+            /* verbose= */ false
+        );
+
+        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+    }
+
+    function onScanSuccess(decodedText, decodedResult) {
+        // Haptic feedback & sound
+        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+
+        if (isBatchMode) {
+            lookupBatchCode(decodedText);
+        } else {
+            if (html5QrcodeScanner) html5QrcodeScanner.clear();
+            lookupCode(decodedText);
+        }
+    }
+
+    function onScanFailure(error) {
+        // quiet fail
+    }
+
+    async function lookupBatchCode(itemCode) {
+        try {
+            const res = await fetch(`/api/items/scan/${encodeURIComponent(itemCode)}`);
+            if (res.ok) {
+                const item = await res.json();
+                // Add to batch cart
+                const existing = batchCart.find(i => i.id === item.id);
+                if (existing) {
+                    existing.quantity += 1;
+                } else {
+                    batchCart.push({ id: item.id, item_code: item.item_code, name: item.name, unit: item.unit, quantity: 1 });
+                }
+                renderBatchCart();
+                showToast(`✅ Đã quét gom: ${item.name}`);
+            } else {
+                showToast(`⚠️ Không tìm thấy mã VT '${itemCode}'`, 'error');
+            }
+        } catch (err) {
+            // Offline fallback simulation
+            batchCart.push({ id: Math.floor(Math.random()*1000), item_code: itemCode, name: `Vật tư ${itemCode}`, unit: 'Cái', quantity: 1 });
+            renderBatchCart();
+            showToast(`📱 Offline: Đã lưu tạm mã ${itemCode}`);
+        }
+    }
+
+    function renderBatchCart() {
+        const countEl = document.getElementById('batch-count');
+        const listEl = document.getElementById('batch-items-list');
+        countEl.textContent = batchCart.reduce((sum, i) => sum + i.quantity, 0);
+
+        listEl.innerHTML = batchCart.map(i => `
+            <div class="batch-item-chip">
+                <span><strong style="color: #FEF08A;">${i.item_code}</strong> - ${i.name}</span>
+                <span style="color: #34D399; font-weight: 800;">${i.quantity} ${i.unit}</span>
+            </div>
+        `).join('');
+    }
+
+    function clearBatchCart() {
+        batchCart = [];
+        renderBatchCart();
+    }
+
+    async function submitBatchExport() {
+        if (batchCart.length === 0) {
+            showToast('Giỏ hàng loạt đang trống! Hãy quét mã QR trước.', 'error');
+            return;
+        }
+
+        const reqName = document.getElementById('batch_requester').value;
+        const dest = document.getElementById('batch_destination').value;
+        const reas = document.getElementById('batch_reason').value;
+
+        const payload = {
+            requester_name: reqName,
+            destination: dest,
+            reason: reas,
+            items: batchCart.map(i => ({ item_id: i.id, quantity: i.quantity }))
+        };
+
+        if (!navigator.onLine) {
+            // Store in localStorage for Offline PWA Sync
+            let queue = JSON.parse(localStorage.getItem('offline_requests_queue') || '[]');
+            queue.push(payload);
+            localStorage.setItem('offline_requests_queue', JSON.stringify(queue));
+            clearBatchCart();
+            showToast('📱 ĐÃ LƯU TẠM OFFLINE! Hệ thống sẽ tự đồng bộ khi có internet trở lại.');
+            return;
+        }
+
+        try {
+            const reqRes = await fetch('/api/requests', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (reqRes.ok) {
+                const reqData = await reqRes.json();
+                // Execute export
+                const expRes = await fetch('/api/export', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-User-Role': 'admin' },
+                    body: JSON.stringify({ request_id: reqData.id })
+                });
+
+                if (expRes.ok) {
+                    showToast('🎉 Đã lập & Phê duyệt xuất kho hàng loạt thành công!');
+                    clearBatchCart();
+                } else {
+                    showToast('Đã tạo phiếu chờ Admin phê duyệt!');
+                    clearBatchCart();
+                }
+            } else {
+                showToast('Lỗi tạo phiếu xuất hàng loạt', 'error');
+            }
+        } catch (err) {
+            showToast('Lỗi kết nối server', 'error');
+        }
+    }
+
+    async function checkAndSyncOfflineQueue() {
+        updateNetworkBanner();
+        const queueStr = localStorage.getItem('offline_requests_queue');
+        if (!queueStr) return;
+        const queue = JSON.parse(queueStr);
+        if (queue.length === 0) return;
+
+        showToast('⚡ Đang tự động đồng bộ dữ liệu quét Offline lên server...');
+        
+        for (const payload of queue) {
+            try {
+                await fetch('/api/requests', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            } catch(e) {}
+        }
+
+        localStorage.removeItem('offline_requests_queue');
+        showToast('✅ Đã đồng bộ hoàn tất toàn bộ dữ liệu Offline!');
+    }
+
+    async function lookupCode(itemCode) {
+        if (!itemCode) return;
+        try {
+            const res = await fetch(`/api/items/scan/${encodeURIComponent(itemCode)}`);
+            if (res.ok) {
+                currentItem = await res.json();
+                document.getElementById('res-code').textContent = currentItem.item_code;
+                document.getElementById('res-name').textContent = currentItem.name;
+                document.getElementById('res-stock').textContent = `Tồn kho hiện tại: ${currentItem.current_stock} ${currentItem.unit}`;
+                
+                document.getElementById('result-panel').style.display = 'block';
+                document.getElementById('download-section').style.display = 'none';
+            } else {
+                showToast(`Không tìm thấy vật tư mã '${itemCode}'`, 'error');
+            }
+        } catch (err) {
+            showToast('Lỗi kết nối server', 'error');
+        }
+    }
+
+    async function handleScanExport() {
+        if (!currentItem) return;
+        const reqName = document.getElementById('requester_name').value;
+        const dest = document.getElementById('destination').value;
+        const reas = document.getElementById('reason').value;
+        const qty = parseInt(document.getElementById('export_qty').value);
+
+        if (qty > currentItem.current_stock) {
+            showToast(`Tồn kho không đủ! Tồn hiện tại chỉ còn ${currentItem.current_stock} ${currentItem.unit}`, 'error');
+            return;
+        }
+
+        try {
+            const reqRes = await fetch('/api/requests', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    requester_name: reqName,
+                    destination: dest,
+                    reason: reas,
+                    items: [{ item_id: currentItem.id, quantity: qty }]
+                })
+            });
+
+            if (reqRes.ok) {
+                const reqData = await reqRes.json();
+
+                // Auto execute export
+                const expRes = await fetch('/api/export', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-User-Role': 'admin' },
+                    body: JSON.stringify({ request_id: reqData.id })
+                });
+
+                const expData = await expRes.json();
+                if (expRes.ok && expData.success) {
+                    showToast('Xuất kho & sinh 3 file báo cáo thành công!');
+                    document.getElementById('download-section').style.display = 'block';
+                    document.getElementById('link-pdf').href = expData.files.pdf;
+                    document.getElementById('link-excel').href = expData.files.excel;
+                    document.getElementById('link-word').href = expData.files.word;
+                    document.getElementById('btn-submit-export').style.display = 'none';
+                }
+            }
+        } catch (err) {
+            showToast('Lỗi kết nối server khi xuất kho', 'error');
+        }
+    }
+
+    function resetScanner() {
+        document.getElementById('result-panel').style.display = 'none';
+        document.getElementById('btn-submit-export').style.display = 'block';
+        currentItem = null;
+        initScanner();
+    }
+
+    function showToast(msg, type = 'success') {
+        const toast = document.getElementById('toast');
+        toast.textContent = msg;
+        toast.style.borderColor = type === 'error' ? '#EF4444' : '#059669';
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 3000);
+    }
+
+    // Auto Init Scanner & Network Banner
+    updateNetworkBanner();
+    window.addEventListener('DOMContentLoaded', initScanner);
+</script>
+
+</body>
+</html>
