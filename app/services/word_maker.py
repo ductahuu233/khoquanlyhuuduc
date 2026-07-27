@@ -22,9 +22,7 @@ def set_cell_margins(cell, top=120, bottom=120, left=150, right=150):
 
 def set_cell_border(cell, **kwargs):
     """
-    gán viền cho ô bảng.
-    kwargs: top, bottom, left, right
-    values: {"sz": 4, "val": "single", "color": "000000"}
+    Gán viền đen nét đậm cho ô bảng.
     """
     tcPr = cell._element.get_or_add_tcPr()
     tcBorders = OxmlElement('w:tcBorders')
@@ -34,7 +32,7 @@ def set_cell_border(cell, **kwargs):
             tag = 'w:{}'.format(edge)
             element = OxmlElement(tag)
             element.set(qn('w:val'), edge_data.get('val', 'single'))
-            element.set(qn('w:sz'), str(edge_data.get('sz', 4)))
+            element.set(qn('w:sz'), str(edge_data.get('sz', 8))) # 1pt solid line
             element.set(qn('w:space'), '0')
             element.set(qn('w:color'), edge_data.get('color', '000000'))
             tcBorders.append(element)
@@ -198,11 +196,23 @@ def generate_word(export_data: dict) -> str:
     table.style = 'Table Grid'
     table.alignment = WD_TABLE_ALIGNMENT.CENTER
 
+    # Ép viền bảng ở cấp độ Table XML Properties (<w:tblBorders>)
+    tblPr = table._tbl.tblPr
+    tblBorders = OxmlElement('w:tblBorders')
+    for border_name in ['top', 'left', 'bottom', 'right', 'insideH', 'insideV']:
+        border = OxmlElement(f'w:{border_name}')
+        border.set(qn('w:val'), 'single')
+        border.set(qn('w:sz'), '8')  # 1pt solid black line
+        border.set(qn('w:space'), '0')
+        border.set(qn('w:color'), '000000')
+        tblBorders.append(border)
+    tblPr.append(tblBorders)
+
     hdr_cells = table.rows[0].cells
     headers = ["STT", "Mã Vật Tư", "Tên Vật Tư / Thiết Bị Kho", "Đơn Vị Tính", "Số Lượng"]
     widths = [Inches(0.6), Inches(1.2), Inches(2.8), Inches(0.9), Inches(0.9)]
 
-    b_black = {"val": "single", "sz": 4, "color": "000000"}
+    b_black = {"val": "single", "sz": 8, "color": "000000"}
 
     for i, title in enumerate(headers):
         hdr_cells[i].width = widths[i]

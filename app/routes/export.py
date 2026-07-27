@@ -1,4 +1,5 @@
 import os
+import time
 import zipfile
 from datetime import datetime
 from typing import Optional
@@ -62,7 +63,7 @@ def download_request_zip(
     zip_filename = f"HoSo_XuatKho_PXK_{req.id}.zip"
     zip_path = os.path.join(EXPORTS_DIR, zip_filename)
 
-    # Re-generate word before compressing to guarantee latest format
+    # Re-generate word before compressing to guarantee latest Decree 30 format
     try:
         export_items_list = [
             {
@@ -86,7 +87,7 @@ def download_request_zip(
             for attr in ['pdf_path', 'excel_path', 'word_path']:
                 path_val = getattr(req, attr)
                 if path_val:
-                    actual_filename = os.path.basename(path_val)
+                    actual_filename = os.path.basename(path_val.split('?')[0])
                     actual_filepath = os.path.join(EXPORTS_DIR, actual_filename)
                     if os.path.exists(actual_filepath):
                         zipf.write(actual_filepath, arcname=actual_filename)
@@ -193,10 +194,10 @@ def execute_export(
         excel_path = generate_excel(export_data)
         word_path = generate_word(export_data)
 
-        # Save relative API links in DB
-        req.pdf_path = f"/api/download/{os.path.basename(pdf_path)}"
-        req.excel_path = f"/api/download/{os.path.basename(excel_path)}"
-        req.word_path = f"/api/download/{os.path.basename(word_path)}"
+        ts = int(time.time())
+        req.pdf_path = f"/api/download/{os.path.basename(pdf_path)}?t={ts}"
+        req.excel_path = f"/api/download/{os.path.basename(excel_path)}?t={ts}"
+        req.word_path = f"/api/download/{os.path.basename(word_path)}?t={ts}"
         db.commit()
 
         log_audit(db, role, "DUYỆT XUẤT KHO", f"#PXK-{req.id}", f"Xuất kho thành công cho cán bộ '{req.requester_name}' - Đơn vị nhận '{req.destination}'")
@@ -221,6 +222,7 @@ def execute_export(
 @router.get("/api/export/history")
 def get_export_history(db: Session = Depends(get_db)):
     exported_requests = db.query(Request).filter(Request.status == "exported").order_by(Request.exported_at.desc()).all()
+    ts = int(time.time())
     return [
         {
             "id": req.id,
@@ -229,9 +231,9 @@ def get_export_history(db: Session = Depends(get_db)):
             "reason": req.reason,
             "exported_at": req.exported_at.isoformat() if req.exported_at else req.created_at.isoformat(),
             "files": {
-                "pdf": req.pdf_path,
-                "excel": req.excel_path,
-                "word": req.word_path
+                "pdf": f"/api/download/phieu_xuat_kho_{req.id}.pdf?t={ts}",
+                "excel": f"/api/download/so_nhat_ky_xuat_kho_{req.id}.xlsx?t={ts}",
+                "word": f"/api/download/to_trinh_xuat_kho_{req.id}.docx?t={ts}"
             }
         } for req in exported_requests
     ]
@@ -289,9 +291,10 @@ def edit_and_regenerate_export(
         excel_path = generate_excel(export_data)
         word_path = generate_word(export_data)
 
-        req.pdf_path = f"/api/download/{os.path.basename(pdf_path)}"
-        req.excel_path = f"/api/download/{os.path.basename(excel_path)}"
-        req.word_path = f"/api/download/{os.path.basename(word_path)}"
+        ts = int(time.time())
+        req.pdf_path = f"/api/download/{os.path.basename(pdf_path)}?t={ts}"
+        req.excel_path = f"/api/download/{os.path.basename(excel_path)}?t={ts}"
+        req.word_path = f"/api/download/{os.path.basename(word_path)}?t={ts}"
         db.commit()
 
         log_audit(db, role, "SỬA FILE BÁO CÁO", f"#PXK-{req.id}", f"Cập nhật lại thông tin phiếu #{req.id} & tự động tạo lại bộ 3 file")
@@ -314,12 +317,13 @@ def edit_and_regenerate_export(
 
 @router.get("/api/download/{filename}")
 def download_file(filename: str, db: Session = Depends(get_db)):
-    file_path = os.path.join(EXPORTS_DIR, filename)
+    actual_filename = filename.split('?')[0]
+    file_path = os.path.join(EXPORTS_DIR, actual_filename)
 
     # Auto-regenerate Word document dynamically on download to guarantee 100% Decree 30 formatting
-    if filename.startswith("to_trinh_xuat_kho_") and filename.endswith(".docx"):
+    if actual_filename.startswith("to_trinh_xuat_kho_") and actual_filename.endswith(".docx"):
         try:
-            req_id_str = filename.replace("to_trinh_xuat_kho_", "").replace(".docx", "")
+            req_id_str = actual_filename.replace("to_trinh_xuat_kho_", "").replace(".docx", "")
             req_id = int(req_id_str)
             req = db.query(Request).filter(Request.id == req_id).first()
             if req:
@@ -346,6 +350,15 @@ def download_file(filename: str, db: Session = Depends(get_db)):
     if not os.path.exists(file_path):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"File '{filename}' không tồn tại hoặc đã bị xóa."
+            detail=f"File '{actual_filename}' không tồn tại hoặc đã bị xóa."
         )
-    return FileResponse(path=file_path, filename=filename)
+
+    return FileResponse(
+        path=file_path,
+        filename=actual_filename,
+        headers={
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "Pragma": "no-cache",
+            "Expires": "0"
+        }
+    )
