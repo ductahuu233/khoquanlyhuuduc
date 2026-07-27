@@ -9,7 +9,7 @@ from docx.oxml.ns import nsdecls, qn
 
 OUTPUT_DIR = os.path.join(os.getcwd(), "exports")
 
-def set_cell_margins(cell, top=100, bottom=100, left=150, right=150):
+def set_cell_margins(cell, top=120, bottom=120, left=150, right=150):
     """Thiết lập lề trong cho ô bảng Word."""
     tcPr = cell._element.get_or_add_tcPr()
     tcMar = OxmlElement('w:tcMar')
@@ -19,6 +19,26 @@ def set_cell_margins(cell, top=100, bottom=100, left=150, right=150):
         node.set(qn('w:type'), 'dxa')
         tcMar.append(node)
     tcPr.append(tcMar)
+
+def set_cell_border(cell, **kwargs):
+    """
+    gán viền cho ô bảng.
+    kwargs: top, bottom, left, right
+    values: {"sz": 4, "val": "single", "color": "000000"}
+    """
+    tcPr = cell._element.get_or_add_tcPr()
+    tcBorders = OxmlElement('w:tcBorders')
+    for edge in ('top', 'left', 'bottom', 'right', 'insideH', 'insideV'):
+        edge_data = kwargs.get(edge)
+        if edge_data:
+            tag = 'w:{}'.format(edge)
+            element = OxmlElement(tag)
+            element.set(qn('w:val'), edge_data.get('val', 'single'))
+            element.set(qn('w:sz'), str(edge_data.get('sz', 4)))
+            element.set(qn('w:space'), '0')
+            element.set(qn('w:color'), edge_data.get('color', '000000'))
+            tcBorders.append(element)
+    tcPr.append(tcBorders)
 
 def generate_word(export_data: dict) -> str:
     """
@@ -89,8 +109,19 @@ def generate_word(export_data: dict) -> str:
     r_tn.font.name = "Times New Roman"
     r_tn.font.size = Pt(11)
 
-    now_date = datetime.now()
-    r_date = p_right.add_run(f"Hà Nội, ngày {now_date.day:02d} tháng {now_date.month:02d} năm {now_date.year}")
+    # Trích xuất ngày tháng chuẩn (bỏ giờ phút giây)
+    raw_date_str = str(export_data.get("export_date", ""))
+    try:
+        if " " in raw_date_str:
+            date_part = raw_date_str.split(" ")[0]
+            dt = datetime.strptime(date_part, "%d/%m/%Y")
+        else:
+            dt = datetime.strptime(raw_date_str, "%d/%m/%Y")
+    except Exception:
+        dt = datetime.now()
+
+    date_formatted = f"Hà Nội, ngày {dt.day:02d} tháng {dt.month:02d} năm {dt.year}"
+    r_date = p_right.add_run(date_formatted)
     r_date.italic = True
     r_date.font.name = "Times New Roman"
     r_date.font.size = Pt(11)
@@ -100,7 +131,7 @@ def generate_word(export_data: dict) -> str:
     p_space.paragraph_format.space_before = Pt(12)
     p_space.paragraph_format.space_after = Pt(6)
 
-    # 2. TIÊU ĐỀ TỜ TRÌNH VÀ TRÍCH YẾU (Chuẩn màu đen, In hoa, Căn giữa)
+    # 2. TIÊU ĐỀ TỜ TRÌNH VÀ TRÍCH YẾU (MÀU ĐEN CHUẨN, IN HOA, CĂN GIỮA)
     p_title = doc.add_paragraph()
     p_title.alignment = WD_ALIGN_PARAGRAPH.CENTER
     p_title.paragraph_format.space_after = Pt(4)
@@ -162,7 +193,7 @@ def generate_word(export_data: dict) -> str:
     r_sec3.font.size = Pt(13)
     p_body.add_run("Kính trình Lãnh đạo xem xét, phê duyệt xuất kho số lượng vật tư cụ thể theo danh sách dưới đây:").font.name = "Times New Roman"
 
-    # 5. BẢNG DANH SÁCH VẬT TƯ (BẮT BUỘC KẺ VIỀN KÍN CHUẨN NĐ 30 - Table Grid)
+    # 5. BẢNG DANH SÁCH VẬT TƯ (BẮT BUỘC KẺ VIỀN KÍN TOÀN BỘ CÁC Ô CHUẨN NĐ 30 - Table Grid)
     table = doc.add_table(rows=1, cols=5)
     table.style = 'Table Grid'
     table.alignment = WD_TABLE_ALIGNMENT.CENTER
@@ -171,16 +202,19 @@ def generate_word(export_data: dict) -> str:
     headers = ["STT", "Mã Vật Tư", "Tên Vật Tư / Thiết Bị Kho", "Đơn Vị Tính", "Số Lượng"]
     widths = [Inches(0.6), Inches(1.2), Inches(2.8), Inches(0.9), Inches(0.9)]
 
+    b_black = {"val": "single", "sz": 4, "color": "000000"}
+
     for i, title in enumerate(headers):
         hdr_cells[i].width = widths[i]
         hdr_cells[i].text = title
+        set_cell_border(hdr_cells[i], top=b_black, bottom=b_black, left=b_black, right=b_black)
+        set_cell_margins(hdr_cells[i], top=120, bottom=120)
         p = hdr_cells[i].paragraphs[0]
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
         for r in p.runs:
             r.font.name = "Times New Roman"
             r.font.bold = True
             r.font.size = Pt(11)
-        set_cell_margins(hdr_cells[i], top=120, bottom=120)
 
     # Tô màu nền tiêu đề bảng
     shading_elm = parse_xml(r'<w:shd {} w:fill="F1F5F9"/>'.format(nsdecls('w')))
@@ -199,6 +233,7 @@ def generate_word(export_data: dict) -> str:
         for i, cell in enumerate(row_cells):
             cell.width = widths[i]
             cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
+            set_cell_border(cell, top=b_black, bottom=b_black, left=b_black, right=b_black)
             set_cell_margins(cell, top=100, bottom=100)
             p = cell.paragraphs[0]
             p.alignment = alignments[i]
@@ -213,6 +248,10 @@ def generate_word(export_data: dict) -> str:
     total_row[2].text = "TỔNG CỘNG"
     total_row[3].text = ""
     total_row[4].text = str(total_qty)
+
+    for cell in total_row:
+        set_cell_border(cell, top=b_black, bottom=b_black, left=b_black, right=b_black)
+        set_cell_margins(cell, top=100, bottom=100)
 
     p_tot_label = total_row[2].paragraphs[0]
     p_tot_label.alignment = WD_ALIGN_PARAGRAPH.RIGHT

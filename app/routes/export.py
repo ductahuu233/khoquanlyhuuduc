@@ -62,8 +62,26 @@ def download_request_zip(
     zip_filename = f"HoSo_XuatKho_PXK_{req.id}.zip"
     zip_path = os.path.join(EXPORTS_DIR, zip_filename)
 
-    # Compress PDF, Excel, Word into zip archive
+    # Re-generate word before compressing to guarantee latest format
     try:
+        export_items_list = [
+            {
+                "item_code": d.item.item_code if d.item else f"VT-{d.item_id}",
+                "name": d.item.name if d.item else "Vật tư",
+                "unit": d.item.unit if d.item else "Cái",
+                "quantity": d.quantity
+            } for d in req.details
+        ]
+        export_data = {
+            "request_id": req.id,
+            "requester_name": req.requester_name,
+            "destination": req.destination or "Đơn vị tiếp nhận",
+            "reason": req.reason or "Phục vụ công tác chuyên môn",
+            "export_date": (req.exported_at or datetime.now()).strftime("%d/%m/%Y"),
+            "items": export_items_list
+        }
+        generate_word(export_data)
+
         with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
             for attr in ['pdf_path', 'excel_path', 'word_path']:
                 path_val = getattr(req, attr)
@@ -166,7 +184,7 @@ def execute_export(
         "requester_name": req.requester_name,
         "destination": req.destination or "Đơn vị tiếp nhận",
         "reason": req.reason or "Phục vụ công tác chuyên môn",
-        "export_date": req.exported_at.strftime("%d/%m/%Y %H:%M:%S"),
+        "export_date": req.exported_at.strftime("%d/%m/%Y"),
         "items": export_items_list
     }
 
@@ -262,7 +280,7 @@ def edit_and_regenerate_export(
         "requester_name": req.requester_name,
         "destination": req.destination or "Đơn vị tiếp nhận",
         "reason": req.reason or "Phục vụ công tác chuyên môn",
-        "export_date": (req.exported_at or datetime.now()).strftime("%d/%m/%Y %H:%M:%S"),
+        "export_date": (req.exported_at or datetime.now()).strftime("%d/%m/%Y"),
         "items": export_items_list
     }
 
@@ -295,8 +313,36 @@ def edit_and_regenerate_export(
         )
 
 @router.get("/api/download/{filename}")
-def download_file(filename: str):
+def download_file(filename: str, db: Session = Depends(get_db)):
     file_path = os.path.join(EXPORTS_DIR, filename)
+
+    # Auto-regenerate Word document dynamically on download to guarantee 100% Decree 30 formatting
+    if filename.startswith("to_trinh_xuat_kho_") and filename.endswith(".docx"):
+        try:
+            req_id_str = filename.replace("to_trinh_xuat_kho_", "").replace(".docx", "")
+            req_id = int(req_id_str)
+            req = db.query(Request).filter(Request.id == req_id).first()
+            if req:
+                export_items_list = [
+                    {
+                        "item_code": d.item.item_code if d.item else f"VT-{d.item_id}",
+                        "name": d.item.name if d.item else "Vật tư",
+                        "unit": d.item.unit if d.item else "Cái",
+                        "quantity": d.quantity
+                    } for d in req.details
+                ]
+                export_data = {
+                    "request_id": req.id,
+                    "requester_name": req.requester_name,
+                    "destination": req.destination or "Đơn vị tiếp nhận",
+                    "reason": req.reason or "Phục vụ công tác chuyên môn",
+                    "export_date": (req.exported_at or datetime.now()).strftime("%d/%m/%Y"),
+                    "items": export_items_list
+                }
+                generate_word(export_data)
+        except Exception as e:
+            print("Auto-regenerate word error:", e)
+
     if not os.path.exists(file_path):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
