@@ -4,13 +4,25 @@ from docx import Document
 from docx.shared import Inches, Pt, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_ALIGN_VERTICAL, WD_TABLE_ALIGNMENT
+from docx.oxml import OxmlElement, parse_xml
+from docx.oxml.ns import nsdecls, qn
 
 OUTPUT_DIR = os.path.join(os.getcwd(), "exports")
 
+def set_cell_margins(cell, top=100, bottom=100, left=150, right=150):
+    """Thiết lập lề trong cho ô bảng Word."""
+    tcPr = cell._element.get_or_add_tcPr()
+    tcMar = OxmlElement('w:tcMar')
+    for m, val in [('top', top), ('bottom', bottom), ('left', left), ('right', right)]:
+        node = OxmlElement(f'w:{m}')
+        node.set(qn('w:w'), str(val))
+        node.set(qn('w:type'), 'dxa')
+        tcMar.append(node)
+    tcPr.append(tcMar)
+
 def generate_word(export_data: dict) -> str:
     """
-    Sinh Tờ trình xuất kho vật tư dưới dạng file Microsoft Word (.docx).
-    Trả về đường dẫn tuyệt đối file đã lưu.
+    Sinh Tờ trình xuất kho vật tư chuẩn thể thức hành chính Nghị định 30/2020/NĐ-CP (.docx).
     """
     if not os.path.exists(OUTPUT_DIR):
         os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -20,105 +32,161 @@ def generate_word(export_data: dict) -> str:
 
     doc = Document()
 
-    # Page setup
-    sections = doc.sections
-    for section in sections:
-        section.top_margin = Inches(0.8)
-        section.bottom_margin = Inches(0.8)
-        section.left_margin = Inches(1.0)
-        section.right_margin = Inches(1.0)
+    # Cấu hình lề trang A4 chuẩn Nghị định 30 (Trên 2cm, Dưới 2cm, Trái 3cm, Phải 2cm)
+    for section in doc.sections:
+        section.top_margin = Inches(0.79)     # 2 cm
+        section.bottom_margin = Inches(0.79)  # 2 cm
+        section.left_margin = Inches(1.18)    # 3 cm
+        section.right_margin = Inches(0.79)   # 2 cm
 
-    # 1. Header Quốc Hiệu Tự Do
-    p_header1 = doc.add_paragraph()
-    p_header1.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run1 = p_header1.add_run("CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM\nĐộc lập - Tự do - Hạnh phúc")
-    run1.bold = True
-    run1.font.name = "Times New Roman"
-    run1.font.size = Pt(12)
-    run1.font.color.rgb = RGBColor(0x1E, 0x29, 0x3B)
+    # 1. KHUNG TIÊU NGỮ VÀ ĐƠN VỊ BAN HÀNH (Bảng 2 cột không viền chuẩn NĐ 30)
+    header_table = doc.add_table(rows=1, cols=2)
+    header_table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    header_table.autofit = False
 
-    doc.add_paragraph() # Spacer
+    # Bỏ viền bảng header
+    for row in header_table.rows:
+        for cell in row.cells:
+            tcPr = cell._element.get_or_add_tcPr()
+            tcBorders = OxmlElement('w:tcBorders')
+            for b in ['top', 'left', 'bottom', 'right', 'insideH', 'insideV']:
+                node = OxmlElement(f'w:{b}')
+                node.set(qn('w:val'), 'none')
+                tcBorders.append(node)
+            tcPr.append(tcBorders)
 
-    # 2. Title
+    c_left = header_table.cell(0, 0)
+    c_right = header_table.cell(0, 1)
+    c_left.width = Inches(2.8)
+    c_right.width = Inches(3.6)
+
+    # Cột trái: Tên cơ quan & Số hiệu
+    p_left = c_left.paragraphs[0]
+    p_left.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    r_cq1 = p_left.add_run("BỘ CÔNG AN\n")
+    r_cq1.font.name = "Times New Roman"
+    r_cq1.font.size = Pt(11)
+    
+    r_cq2 = p_left.add_run("CỤC KỸ THUẬT VẬT TƯ\n")
+    r_cq2.bold = True
+    r_cq2.font.name = "Times New Roman"
+    r_cq2.font.size = Pt(11)
+
+    r_so = p_left.add_run(f"Số: {request_id}/TTr-PXK")
+    r_so.font.name = "Times New Roman"
+    r_so.font.size = Pt(11)
+
+    # Cột phải: Quốc hiệu & Tiêu ngữ & Ngày tháng
+    p_right = c_right.paragraphs[0]
+    p_right.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    r_qh = p_right.add_run("CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM\n")
+    r_qh.bold = True
+    r_qh.font.name = "Times New Roman"
+    r_qh.font.size = Pt(11)
+
+    r_tn = p_right.add_run("Độc lập - Tự do - Hạnh phúc\n")
+    r_tn.bold = True
+    r_tn.font.name = "Times New Roman"
+    r_tn.font.size = Pt(11)
+
+    now_date = datetime.now()
+    r_date = p_right.add_run(f"Hà Nội, ngày {now_date.day:02d} tháng {now_date.month:02d} năm {now_date.year}")
+    r_date.italic = True
+    r_date.font.name = "Times New Roman"
+    r_date.font.size = Pt(11)
+
+    # Khoảng cách sau Header
+    p_space = doc.add_paragraph()
+    p_space.paragraph_format.space_before = Pt(12)
+    p_space.paragraph_format.space_after = Pt(6)
+
+    # 2. TIÊU ĐỀ TỜ TRÌNH VÀ TRÍCH YẾU (Chuẩn màu đen, In hoa, Căn giữa)
     p_title = doc.add_paragraph()
     p_title.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run_title = p_title.add_run("TỜ TRÌNH XUẤT KHO VẬT TƯ")
+    p_title.paragraph_format.space_after = Pt(4)
+    run_title = p_title.add_run("TỜ TRÌNH")
     run_title.bold = True
     run_title.font.name = "Times New Roman"
-    run_title.font.size = Pt(16)
-    run_title.font.color.rgb = RGBColor(0x1E, 0x3A, 0x8A)
+    run_title.font.size = Pt(15)
+    run_title.font.color.rgb = RGBColor(0, 0, 0)  # Chuẩn màu đen NĐ 30
 
     p_sub = doc.add_paragraph()
     p_sub.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run_sub = p_sub.add_run(f"Số phiếu: PXK-{request_id}")
-    run_sub.italic = True
+    p_sub.paragraph_format.space_after = Pt(16)
+    run_sub = p_sub.add_run("V/v xin phê duyệt xuất kho vật tư phục vụ công tác chuyên môn")
+    run_sub.bold = True
     run_sub.font.name = "Times New Roman"
-    run_sub.font.size = Pt(11)
+    run_sub.font.size = Pt(12)
+    run_sub.font.color.rgb = RGBColor(0, 0, 0)
 
-    # 3. Main Body
-    export_date = export_data.get("export_date", datetime.now().strftime("%d/%m/%Y"))
-    requester = export_data.get("requester_name", "Ban Quản lý")
-    destination = export_data.get("destination", "N/A")
-    reason = export_data.get("reason", "N/A")
+    # 3. KÍNH GỬI
+    requester = export_data.get("requester_name", "Đại úy Nguyễn Văn A")
+    destination = export_data.get("destination", "Đơn vị tiếp nhận")
+    reason = export_data.get("reason", "Phục vụ công tác chuyên môn")
     items = export_data.get("items", [])
     total_qty = sum(item.get("quantity", 0) for item in items)
 
-    p_content = doc.add_paragraph()
-    p_content.paragraph_format.line_spacing = 1.25
-    p_content.paragraph_format.space_after = Pt(8)
-    
-    r_kg = p_content.add_run("Kính gửi: ")
-    r_kg.bold = True
-    r_kg.font.name = "Times New Roman"
-    r_kg.font.size = Pt(13)
+    p_kg = doc.add_paragraph()
+    p_kg.paragraph_format.space_after = Pt(12)
+    p_kg.paragraph_format.line_spacing = 1.25
+    r_kg_label = p_kg.add_run("Kính gửi: ")
+    r_kg_label.bold = True
+    r_kg_label.font.name = "Times New Roman"
+    r_kg_label.font.size = Pt(13)
+    p_kg.add_run("Ban Giám đốc / Thủ trưởng Cục Kỹ thuật Vật tư").font.name = "Times New Roman"
 
-    p_content.add_run("Trưởng Ban / Lãnh Đạo Đơn Vị\n\n").font.name = "Times New Roman"
-    
-    r_l1 = p_content.add_run("• Cán bộ đề xuất: ")
-    r_l1.bold = True
-    r_l1.font.name = "Times New Roman"
-    p_content.add_run(f"{requester}\n").font.name = "Times New Roman"
+    # 4. NỘI DUNG TỜ TRÌNH (Trình bày văn phong hành chính, KHÔNG dùng dấu chấm bi bullet)
+    p_body = doc.add_paragraph()
+    p_body.paragraph_format.line_spacing = 1.25
+    p_body.paragraph_format.space_after = Pt(8)
 
-    r_l2 = p_content.add_run("• Nơi nhận (Xuất đi đâu): ")
-    r_l2.bold = True
-    r_l2.font.name = "Times New Roman"
-    p_content.add_run(f"{destination}\n").font.name = "Times New Roman"
+    # Mục 1: Căn cứ đề xuất
+    r_sec1 = p_body.add_run("1. Căn cứ và lý do đề xuất:\n")
+    r_sec1.bold = True
+    r_sec1.font.name = "Times New Roman"
+    r_sec1.font.size = Pt(13)
+    p_body.add_run(f"- Căn cứ vào yêu cầu trang bị vật tư phục vụ công tác của: {destination}.\n").font.name = "Times New Roman"
+    p_body.add_run(f"- Mục đích xuất kho: {reason}.\n\n").font.name = "Times New Roman"
 
-    r_l3 = p_content.add_run("• Lý do / Mục đích xuất kho: ")
-    r_l3.bold = True
-    r_l3.font.name = "Times New Roman"
-    p_content.add_run(f"{reason}\n\n").font.name = "Times New Roman"
+    # Mục 2: Người đề xuất
+    r_sec2 = p_body.add_run("2. Thông tin cán bộ đề xuất:\n")
+    r_sec2.bold = True
+    r_sec2.font.name = "Times New Roman"
+    r_sec2.font.size = Pt(13)
+    p_body.add_run(f"- Họ và tên cán bộ đề xuất: {requester}\n\n").font.name = "Times New Roman"
 
-    p_content.add_run(
-        f"Kính trình Ban Lãnh Đạo phê duyệt xuất kho các vật tư phục vụ công tác vào ngày "
-    ).font.name = "Times New Roman"
-    
-    r_date = p_content.add_run(f"{export_date}")
-    r_date.bold = True
-    r_date.font.name = "Times New Roman"
-    
-    p_content.add_run(f". Tổng số lượng vật tư đề xuất xuất kho là: ").font.name = "Times New Roman"
-    
-    r_sum = p_content.add_run(f"{total_qty} đơn vị")
-    r_sum.bold = True
-    r_sum.font.name = "Times New Roman"
-    p_content.add_run(" chi tiết như sau:").font.name = "Times New Roman"
+    # Mục 3: Chi tiết vật tư đề xuất
+    r_sec3 = p_body.add_run("3. Nội dung đề xuất xuất kho:\n")
+    r_sec3.bold = True
+    r_sec3.font.name = "Times New Roman"
+    r_sec3.font.size = Pt(13)
+    p_body.add_run("Kính trình Lãnh đạo xem xét, phê duyệt xuất kho số lượng vật tư cụ thể theo danh sách dưới đây:").font.name = "Times New Roman"
 
-    # 4. Items Table
+    # 5. BẢNG DANH SÁCH VẬT TƯ (BẮT BUỘC KẺ VIỀN KÍN CHUẨN NĐ 30 - Table Grid)
     table = doc.add_table(rows=1, cols=5)
+    table.style = 'Table Grid'
     table.alignment = WD_TABLE_ALIGNMENT.CENTER
+
     hdr_cells = table.rows[0].cells
-    headers = ["STT", "Mã Vật Tư", "Tên Vật Tư", "Đơn Vị Tính", "Số Lượng"]
-    
-    for i, h in enumerate(headers):
-        hdr_cells[i].text = h
+    headers = ["STT", "Mã Vật Tư", "Tên Vật Tư / Thiết Bị Kho", "Đơn Vị Tính", "Số Lượng"]
+    widths = [Inches(0.6), Inches(1.2), Inches(2.8), Inches(0.9), Inches(0.9)]
+
+    for i, title in enumerate(headers):
+        hdr_cells[i].width = widths[i]
+        hdr_cells[i].text = title
         p = hdr_cells[i].paragraphs[0]
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        for run in p.runs:
-            run.font.name = "Times New Roman"
-            run.font.bold = True
-            run.font.size = Pt(11)
+        for r in p.runs:
+            r.font.name = "Times New Roman"
+            r.font.bold = True
+            r.font.size = Pt(11)
+        set_cell_margins(hdr_cells[i], top=120, bottom=120)
 
+    # Tô màu nền tiêu đề bảng
+    shading_elm = parse_xml(r'<w:shd {} w:fill="F1F5F9"/>'.format(nsdecls('w')))
+    table.rows[0]._element.get_or_add_trPr().append(shading_elm)
+
+    # Điền dòng vật tư
     for idx, item in enumerate(items, start=1):
         row_cells = table.add_row().cells
         row_cells[0].text = str(idx)
@@ -127,48 +195,107 @@ def generate_word(export_data: dict) -> str:
         row_cells[3].text = str(item.get("unit", ""))
         row_cells[4].text = str(item.get("quantity", 0))
 
-        for cell in row_cells:
+        alignments = [WD_ALIGN_PARAGRAPH.CENTER, WD_ALIGN_PARAGRAPH.CENTER, WD_ALIGN_PARAGRAPH.LEFT, WD_ALIGN_PARAGRAPH.CENTER, WD_ALIGN_PARAGRAPH.CENTER]
+        for i, cell in enumerate(row_cells):
+            cell.width = widths[i]
             cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
-            for p in cell.paragraphs:
-                for run in p.runs:
-                    run.font.name = "Times New Roman"
-                    run.font.size = Pt(11)
+            set_cell_margins(cell, top=100, bottom=100)
+            p = cell.paragraphs[0]
+            p.alignment = alignments[i]
+            for r in p.runs:
+                r.font.name = "Times New Roman"
+                r.font.size = Pt(11)
 
-    # Spacing
-    p_space = doc.add_paragraph()
-    p_space.paragraph_format.space_before = Pt(12)
+    # Dòng Tổng cộng
+    total_row = table.add_row().cells
+    total_row[0].text = ""
+    total_row[1].text = ""
+    total_row[2].text = "TỔNG CỘNG"
+    total_row[3].text = ""
+    total_row[4].text = str(total_qty)
 
+    p_tot_label = total_row[2].paragraphs[0]
+    p_tot_label.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    for r in p_tot_label.runs:
+        r.font.name = "Times New Roman"
+        r.font.bold = True
+
+    p_tot_val = total_row[4].paragraphs[0]
+    p_tot_val.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    for r in p_tot_val.runs:
+        r.font.name = "Times New Roman"
+        r.font.bold = True
+
+    # 6. ĐOẠN KẾT
     p_end = doc.add_paragraph()
-    r_end = p_end.add_run("Kính trình Trưởng đoàn/Ban Giám đốc xem xét phê duyệt.")
+    p_end.paragraph_format.space_before = Pt(14)
+    p_end.paragraph_format.space_after = Pt(20)
+    r_end = p_end.add_run("Kính trình Lãnh đạo đơn vị xem xét, phê duyệt./.")
     r_end.italic = True
     r_end.font.name = "Times New Roman"
     r_end.font.size = Pt(12)
 
-    # 5. Signature Area
-    p_sig = doc.add_paragraph()
-    p_sig.paragraph_format.space_before = Pt(20)
-    p_sig.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-    r_sig_date = p_sig.add_run(f"Ngày ..... tháng ..... năm 2026\n")
-    r_sig_date.italic = True
-    r_sig_date.font.name = "Times New Roman"
-
+    # 7. KHUNG CHỮ KÝ (Nơi nhận bên trái, Người trình bên phải)
     sig_table = doc.add_table(rows=1, cols=2)
     sig_table.alignment = WD_TABLE_ALIGNMENT.CENTER
-    s_cells = sig_table.rows[0].cells
+    
+    # Bỏ viền bảng chữ ký
+    for row in sig_table.rows:
+        for cell in row.cells:
+            tcPr = cell._element.get_or_add_tcPr()
+            tcBorders = OxmlElement('w:tcBorders')
+            for b in ['top', 'left', 'bottom', 'right', 'insideH', 'insideV']:
+                node = OxmlElement(f'w:{b}')
+                node.set(qn('w:val'), 'none')
+                tcBorders.append(node)
+            tcPr.append(tcBorders)
 
-    p_left = s_cells[0].paragraphs[0]
-    p_left.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    r_l = p_left.add_run("NGƯỜI TRÌNH\n(Ký và ghi rõ họ tên)")
-    r_l.bold = True
-    r_l.font.name = "Times New Roman"
+    s_left = sig_table.cell(0, 0)
+    s_right = sig_table.cell(0, 1)
+    s_left.width = Inches(3.0)
+    s_right.width = Inches(3.4)
 
-    p_right = s_cells[1].paragraphs[0]
-    p_right.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    r_r = p_right.add_run("TRƯỞNG ĐOÀN / PHÊ DUYỆT\n(Ký và ghi rõ họ tên)")
-    r_r.bold = True
-    r_r.font.name = "Times New Roman"
+    # Bên trái: Nơi nhận
+    p_nn = s_left.paragraphs[0]
+    p_nn.paragraph_format.line_spacing = 1.15
+    r_nn_title = p_nn.add_run("NƠI NHẬN:\n")
+    r_nn_title.bold = True
+    r_nn_title.font.name = "Times New Roman"
+    r_nn_title.font.size = Pt(10)
+    
+    r_nn_body = p_nn.add_run("- Như trên;\n- Lưu: VT, Kho.")
+    r_nn_body.font.name = "Times New Roman"
+    r_nn_body.font.size = Pt(10)
 
-    # Save document with try-except
+    # Bên phải: Người trình
+    p_trinh = s_right.paragraphs[0]
+    p_trinh.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    r_trinh1 = p_trinh.add_run("NGƯỜI TRÌNH\n")
+    r_trinh1.bold = True
+    r_trinh1.font.name = "Times New Roman"
+    r_trinh1.font.size = Pt(12)
+
+    r_trinh2 = p_trinh.add_run("(Ký và ghi rõ họ tên)\n\n\n\n")
+    r_trinh2.italic = True
+    r_trinh2.font.name = "Times New Roman"
+    r_trinh2.font.size = Pt(10)
+
+    r_trinh3 = p_trinh.add_run(f"{requester}")
+    r_trinh3.bold = True
+    r_trinh3.font.name = "Times New Roman"
+    r_trinh3.font.size = Pt(12)
+
+    # Khung phê duyệt của Lãnh đạo ở cuối
+    p_app = doc.add_paragraph()
+    p_app.paragraph_format.space_before = Pt(30)
+    r_app = p_app.add_run("Ý KIẾN PHÊ DUYỆT CỦA LÃNH ĐẠO:\n")
+    r_app.bold = True
+    r_app.font.name = "Times New Roman"
+    r_app.font.size = Pt(11)
+    p_app.add_run("......................................................................................................................................................................\n").font.name = "Times New Roman"
+    p_app.add_run("......................................................................................................................................................................").font.name = "Times New Roman"
+
+    # Save file Word
     try:
         doc.save(file_path)
         return file_path
