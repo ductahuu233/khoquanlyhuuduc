@@ -41,6 +41,7 @@ def set_cell_border(cell, **kwargs):
 def generate_word(export_data: dict) -> str:
     """
     Sinh Tờ trình xuất kho vật tư chuẩn thể thức hành chính Nghị định 30/2020/NĐ-CP (.docx).
+    Đơn vị: BỘ TƯ LỆNH CẢNH SÁT CƠ ĐỘNG - ĐOÀN NGHI LỄ CÔNG AN NHÂN DÂN
     """
     if not os.path.exists(OUTPUT_DIR):
         os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -75,28 +76,35 @@ def generate_word(export_data: dict) -> str:
 
     c_left = header_table.cell(0, 0)
     c_right = header_table.cell(0, 1)
-    c_left.width = Inches(2.8)
-    c_right.width = Inches(3.6)
+    c_left.width = Inches(3.2)
+    c_right.width = Inches(3.4)
 
-    # Cột trái: Tên cơ quan & Số hiệu
+    # Cột trái: Tên cơ quan ban hành (BỘ CÔNG AN - BỘ TƯ LỆNH CSCĐ - ĐOÀN NGHI LỄ CAND)
     p_left = c_left.paragraphs[0]
     p_left.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    
     r_cq1 = p_left.add_run("BỘ CÔNG AN\n")
     r_cq1.font.name = "Times New Roman"
-    r_cq1.font.size = Pt(11)
-    
-    r_cq2 = p_left.add_run("CỤC KỸ THUẬT VẬT TƯ\n")
+    r_cq1.font.size = Pt(10.5)
+
+    r_cq2 = p_left.add_run("BỘ TƯ LỆNH CẢNH SÁT CƠ ĐỘNG\n")
     r_cq2.bold = True
     r_cq2.font.name = "Times New Roman"
-    r_cq2.font.size = Pt(11)
+    r_cq2.font.size = Pt(10)
+    
+    r_cq3 = p_left.add_run("ĐOÀN NGHI LỄ CÔNG AN NHÂN DÂN\n")
+    r_cq3.bold = True
+    r_cq3.font.name = "Times New Roman"
+    r_cq3.font.size = Pt(10.5)
 
-    r_so = p_left.add_run(f"Số: {request_id}/TTr-PXK")
+    r_so = p_left.add_run(f"Số: {request_id}/TTr-NL")
     r_so.font.name = "Times New Roman"
     r_so.font.size = Pt(11)
 
-    # Cột phải: Quốc hiệu & Tiêu ngữ & Ngày tháng
+    # Cột phải: Quốc hiệu & Tiêu ngữ & Ngày tháng năm để trống
     p_right = c_right.paragraphs[0]
     p_right.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    
     r_qh = p_right.add_run("CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM\n")
     r_qh.bold = True
     r_qh.font.name = "Times New Roman"
@@ -107,18 +115,8 @@ def generate_word(export_data: dict) -> str:
     r_tn.font.name = "Times New Roman"
     r_tn.font.size = Pt(11)
 
-    # Trích xuất ngày tháng chuẩn (bỏ giờ phút giây)
-    raw_date_str = str(export_data.get("export_date", ""))
-    try:
-        if " " in raw_date_str:
-            date_part = raw_date_str.split(" ")[0]
-            dt = datetime.strptime(date_part, "%d/%m/%Y")
-        else:
-            dt = datetime.strptime(raw_date_str, "%d/%m/%Y")
-    except Exception:
-        dt = datetime.now()
-
-    date_formatted = f"Hà Nội, ngày {dt.day:02d} tháng {dt.month:02d} năm {dt.year}"
+    # Ngày tháng năm để trống theo yêu cầu
+    date_formatted = "......, ngày ..... tháng ..... năm 2026"
     r_date = p_right.add_run(date_formatted)
     r_date.italic = True
     r_date.font.name = "Times New Roman"
@@ -162,7 +160,7 @@ def generate_word(export_data: dict) -> str:
     r_kg_label.bold = True
     r_kg_label.font.name = "Times New Roman"
     r_kg_label.font.size = Pt(13)
-    p_kg.add_run("Ban Giám đốc / Thủ trưởng Cục Kỹ thuật Vật tư").font.name = "Times New Roman"
+    p_kg.add_run("Ban Chỉ huy Đoàn Nghi lễ CAND / Bộ Tư lệnh Cảnh sát Cơ động").font.name = "Times New Roman"
 
     # 4. NỘI DUNG TỜ TRÌNH (Trình bày văn phong hành chính, KHÔNG dùng dấu chấm bi bullet)
     p_body = doc.add_paragraph()
