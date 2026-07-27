@@ -79,23 +79,19 @@ def generate_word(export_data: dict) -> str:
     c_left.width = Inches(3.2)
     c_right.width = Inches(3.4)
 
-    # Cột trái: Tên cơ quan ban hành (BỘ CÔNG AN - BỘ TƯ LỆNH CSCĐ - ĐOÀN NGHI LỄ CAND)
+    # Cột trái: Tên cơ quan ban hành (BỘ TƯ LỆNH CẢNH SÁT CƠ ĐỘNG - ĐOÀN NGHI LỄ CAND)
     p_left = c_left.paragraphs[0]
     p_left.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    
-    r_cq1 = p_left.add_run("BỘ CÔNG AN\n")
-    r_cq1.font.name = "Times New Roman"
-    r_cq1.font.size = Pt(10.5)
 
     r_cq2 = p_left.add_run("BỘ TƯ LỆNH CẢNH SÁT CƠ ĐỘNG\n")
     r_cq2.bold = True
     r_cq2.font.name = "Times New Roman"
-    r_cq2.font.size = Pt(10)
+    r_cq2.font.size = Pt(10.5)
     
     r_cq3 = p_left.add_run("ĐOÀN NGHI LỄ CÔNG AN NHÂN DÂN\n")
     r_cq3.bold = True
     r_cq3.font.name = "Times New Roman"
-    r_cq3.font.size = Pt(10.5)
+    r_cq3.font.size = Pt(11)
 
     r_so = p_left.add_run(f"Số: {request_id}/TTr-NL")
     r_so.font.name = "Times New Roman"
