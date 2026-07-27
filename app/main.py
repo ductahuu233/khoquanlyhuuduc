@@ -3,15 +3,15 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from app.database import engine, Base
-from app.routes import items, requests, export, chat, analytics, audit
+from app.routes import items, requests, export, chat, analytics, audit, inbound, assets, reports
 
 # Create all tables on startup
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title="Hệ Thống Quản Lý Kho Nội Bộ (MVP)",
-    description="Hệ thống quản lý vật tư & tự động hóa tạo báo cáo (PDF, Word, Excel) kèm quét mã QR/Barcode, Trợ lý AI và Phân tích Dự báo Kho",
-    version="2.0.0"
+    title="Hệ Thống Quản Lý Kho & Vòng Đời Tài Sản (v3.0)",
+    description="Hệ thống quản lý vật tư & vòng đời tài sản chuyên nghiệp (Inbound Lô, Serial, Báo hỏng phế phẩm, Thẻ kho, Kiểm kê) - Đoàn Nghi lễ CAND",
+    version="3.0.0"
 )
 
 # Ensure folders exist
@@ -34,13 +34,16 @@ app.include_router(export.router)
 app.include_router(chat.router)
 app.include_router(analytics.router)
 app.include_router(audit.router)
+app.include_router(inbound.router)
+app.include_router(assets.router)
+app.include_router(reports.router)
 
 @app.get("/")
 def read_index():
     index_file = os.path.join(static_dir, "index.html")
     if os.path.exists(index_file):
         return FileResponse(index_file)
-    return {"message": "Chào mừng đến với Hệ thống Quản lý kho Nội bộ (MVP)"}
+    return {"message": "Chào mừng đến với Hệ thống Quản lý Kho & Tài sản v3.0 - Đoàn Nghi lễ CAND"}
 
 @app.get("/scan")
 def read_scan():

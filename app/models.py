@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float, Text
 from sqlalchemy.orm import relationship, Session
 from app.database import Base
 
@@ -22,9 +22,78 @@ class Item(Base):
     unit = Column(String, nullable=False)
     current_stock = Column(Integer, default=0, nullable=False)
     image_url = Column(String, nullable=True)
+    
+    # New V3 Fields
+    category = Column(String, default="consumable")  # consumable (tiêu hao) | fixed_asset (tài sản cố định)
+    min_stock_alert = Column(Integer, default=5)     # Ngưỡng tồn kho tối thiểu cảnh báo đỏ
+    location = Column(String, default="Kho Kỹ Thuật") # Kho Kỹ Thuật, Kho Văn Phòng Phẩm, Kho Phế Phẩm
 
     request_details = relationship("RequestDetail", back_populates="item")
     transactions = relationship("Transaction", back_populates="item")
+    assets = relationship("Asset", back_populates="item")
+    history_records = relationship("AssetHistory", back_populates="item")
+
+class Asset(Base):
+    """Bảng quản lý từng thiết bị/tài sản cố định độc lập có mã Serial/MAC và tem QR riêng"""
+    __tablename__ = "assets"
+
+    id = Column(Integer, primary_key=True, index=True)
+    asset_code = Column(String, unique=True, index=True, nullable=False) # Mã tem QR: TS-0001, TS-0002...
+    item_id = Column(Integer, ForeignKey("items.id"), nullable=False)
+    serial_number = Column(String, nullable=True, index=True)
+    mac_address = Column(String, nullable=True)
+    status = Column(String, default="available") # available (Trong kho), in_use (Đang dùng), maintenance (Bảo hành), damaged (Hỏng), disposed (Thanh lý)
+    assigned_to = Column(String, nullable=True)  # Cán bộ / Đội quản lý sử dụng
+    location = Column(String, default="Kho Kỹ Thuật")
+    inbound_receipt_id = Column(Integer, ForeignKey("inbound_receipts.id"), nullable=True)
+    created_at = Column(DateTime, default=utc_now)
+    updated_at = Column(DateTime, default=utc_now, onupdate=utc_now)
+
+    item = relationship("Item", back_populates="assets")
+    inbound_receipt = relationship("InboundReceipt", back_populates="assets")
+    history_records = relationship("AssetHistory", back_populates="asset")
+
+class InboundReceipt(Base):
+    """Phiếu Nhập Kho Theo Lô"""
+    __tablename__ = "inbound_receipts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    receipt_code = Column(String, unique=True, index=True, nullable=False) # PNK-001
+    source = Column(String, default="Cục cấp") # Cục cấp, Mua sắm nội bộ, Biếu tặng
+    supplier_or_unit = Column(String, nullable=True)
+    created_by = Column(String, default="Thủ kho")
+    status = Column(String, default="completed")
+    created_at = Column(DateTime, default=utc_now)
+
+    details = relationship("InboundDetail", back_populates="receipt", cascade="all, delete-orphan")
+    assets = relationship("Asset", back_populates="inbound_receipt")
+
+class InboundDetail(Base):
+    __tablename__ = "inbound_details"
+
+    id = Column(Integer, primary_key=True, index=True)
+    receipt_id = Column(Integer, ForeignKey("inbound_receipts.id"), nullable=False)
+    item_id = Column(Integer, ForeignKey("items.id"), nullable=False)
+    quantity = Column(Integer, nullable=False)
+    unit_price = Column(Float, default=0.0)
+
+    receipt = relationship("InboundReceipt", back_populates="details")
+    item = relationship("Item")
+
+class AssetHistory(Base):
+    """Thẻ Kho Dấu Vết Vòng Đời Tài Sản"""
+    __tablename__ = "asset_history"
+
+    id = Column(Integer, primary_key=True, index=True)
+    item_id = Column(Integer, ForeignKey("items.id"), nullable=False)
+    asset_id = Column(Integer, ForeignKey("assets.id"), nullable=True)
+    action_type = Column(String, nullable=False) # inbound, export, transfer, damaged, recover, disposed
+    performer = Column(String, nullable=False)
+    details = Column(Text, nullable=True)
+    timestamp = Column(DateTime, default=utc_now)
+
+    item = relationship("Item", back_populates="history_records")
+    asset = relationship("Asset", back_populates="history_records")
 
 class Request(Base):
     __tablename__ = "requests"
@@ -77,6 +146,20 @@ class AuditLog(Base):
     action = Column(String, nullable=False)  # THÊM VẬT TƯ, XUẤT KHO, SỬA FILE, XÓA...
     target = Column(String, nullable=False)  # Tên/Mã đối tượng
     details = Column(String, nullable=True)
+    created_at = Column(DateTime, default=utc_now)
+
+class AuditSheet(Base):
+    """Phiếu Kiểm Kê Kho Định Kỳ"""
+    __tablename__ = "audit_sheets"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, nullable=False)
+    inspector_name = Column(String, nullable=False)
+    location = Column(String, default="Kho Kỹ Thuật")
+    status = Column(String, default="completed") # draft, completed
+    scanned_count = Column(Integer, default=0)
+    expected_count = Column(Integer, default=0)
+    discrepancy_details = Column(Text, nullable=True) # JSON lưu chi tiết chênh lệch thừa/thiếu
     created_at = Column(DateTime, default=utc_now)
 
 def log_audit(db: Session, user_role: str, action: str, target: str, details: str = None):

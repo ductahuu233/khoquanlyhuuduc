@@ -23,6 +23,9 @@ class ItemBase(BaseModel):
     unit: str
     current_stock: int = Field(default=0, ge=0)
     image_url: Optional[str] = None
+    category: str = "consumable"  # consumable | fixed_asset
+    min_stock_alert: int = 5
+    location: str = "Kho Kỹ Thuật"
 
 class ItemCreate(ItemBase):
     pass
@@ -32,12 +35,45 @@ class ItemUpdate(BaseModel):
     unit: Optional[str] = None
     current_stock: Optional[int] = Field(default=None, ge=0)
     image_url: Optional[str] = None
+    category: Optional[str] = None
+    min_stock_alert: Optional[int] = None
+    location: Optional[str] = None
 
 class ItemResponse(ItemBase):
     id: int
 
     class Config:
         from_attributes = True
+
+# Inbound Item & Receipt Schemas
+class InboundItemDetail(BaseModel):
+    item_id: Optional[int] = None
+    item_code: str
+    name: str
+    unit: str
+    category: str = "consumable" # consumable | fixed_asset
+    quantity: int = Field(..., gt=0)
+    unit_price: float = 0.0
+    serial_numbers: Optional[List[str]] = [] # Danh sách Serial cho Fixed Asset
+
+class InboundCreatePayload(BaseModel):
+    source: str = "Cục cấp" # Cục cấp, Mua sắm nội bộ, Biếu tặng
+    supplier_or_unit: Optional[str] = "Đơn vị cung cấp"
+    created_by: Optional[str] = "Thủ kho"
+    location: Optional[str] = "Kho Kỹ Thuật"
+    items: List[InboundItemDetail]
+
+# Asset Schemas
+class AssetReportDamagedPayload(BaseModel):
+    asset_code: str
+    reporter_name: str
+    reason: str
+
+class AssetTransferPayload(BaseModel):
+    asset_code: str
+    to_location: str
+    assigned_to: str
+    performer: str
 
 # RequestDetail Schemas
 class RequestDetailBase(BaseModel):
@@ -97,3 +133,10 @@ class TransactionResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+# Stock Reconciliation / Audit Sheet
+class StockReconciliationPayload(BaseModel):
+    title: str = "Kiểm kê định kỳ kho kỹ thuật"
+    inspector_name: str
+    location: str = "Kho Kỹ Thuật"
+    scanned_asset_codes: List[str]

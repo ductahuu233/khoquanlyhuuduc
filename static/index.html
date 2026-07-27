@@ -637,19 +637,28 @@
         </div>
     </header>
 
-    <!-- Navigation Tabs -->
-    <div class="tabs">
+    <!-- Navigation Tabs VNeID Style -->
+    <div class="tabs" style="flex-wrap: wrap;">
         <button class="tab-btn active" onclick="switchTab('tab-dashboard', this)">
-            <i class="fa-solid fa-chart-line"></i> 0. Dashboard AI & Dự Báo Kho
+            <i class="fa-solid fa-chart-line"></i> 0. Dashboard AI
         </button>
         <button class="tab-btn" onclick="switchTab('tab-inventory', this)">
-            <i class="fa-solid fa-boxes-stacked"></i> 1. Danh Mục Vật Tư Kho
+            <i class="fa-solid fa-boxes-stacked"></i> 1. Danh Mục Kho
         </button>
         <button class="tab-btn" onclick="switchTab('tab-requests', this)">
-            <i class="fa-solid fa-file-invoice"></i> 2. Phiếu Yêu Cầu Xuất Vận Dụng
+            <i class="fa-solid fa-file-invoice"></i> 2. Yêu Cầu Xuất
         </button>
         <button class="tab-btn" onclick="switchTab('tab-export', this)">
-            <i class="fa-solid fa-file-export"></i> 3. Duyệt Xuất Kho & Lịch Sử File Báo Cáo
+            <i class="fa-solid fa-file-export"></i> 3. Duyệt Xuất & File
+        </button>
+        <button class="tab-btn" onclick="switchTab('tab-inbound', this)">
+            <i class="fa-solid fa-truck-ramp-box"></i> 4. Nhập Kho Lô & QR
+        </button>
+        <button class="tab-btn" onclick="switchTab('tab-assets', this)">
+            <i class="fa-solid fa-shield-cat"></i> 5. Phế Phẩm & Thanh Lý
+        </button>
+        <button class="tab-btn" onclick="switchTab('tab-reports', this)">
+            <i class="fa-solid fa-clipboard-check"></i> 6. Thẻ Kho & Kiểm Kê
         </button>
     </div>
 
@@ -963,6 +972,169 @@
                             <tr><td colspan="5" style="text-align: center;">Đang tải lịch sử xuất kho...</td></tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 4: LẬP PHIẾU NHẬP KHO LÔ & IN TEM QR (FEATURE 1) -->
+    <div id="tab-inbound" class="tab-content">
+        <div class="grid-layout export-layout">
+            <div class="card">
+                <div class="card-title">
+                    <span><i class="fa-solid fa-truck-ramp-box" style="color: #F59E0B;"></i> LẬP PHIẾU NHẬP KHO LÔ (INBOUND)</span>
+                </div>
+                <form id="inbound-form" onsubmit="handleInboundSubmit(event)">
+                    <div class="form-group">
+                        <label>Nguồn Gốc Nhập Kho</label>
+                        <select id="inbound_source">
+                            <option value="Cục Cấp">Cục Kỹ Thuật Vật Tư Cấp</option>
+                            <option value="Mua Sắm Nội Bộ">Mua Sắm Nội Bộ Đơn Vị</option>
+                            <option value="Biếu Tặng / Viện Trợ">Biếu Tặng / Viện Trợ</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Cơ Quan / Đơn Vị Giao Hàng</label>
+                        <input type="text" id="inbound_supplier" value="Cục Kỹ Thuật Vật Tư - Bộ Công An" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Thủ Kho Nhập</label>
+                        <input type="text" id="inbound_created_by" value="Thượng úy Trần Văn B" required>
+                    </div>
+
+                    <div style="border-top: 1px dashed rgba(245,158,11,0.3); margin: 16px 0; padding-top: 12px;">
+                        <div style="font-size: 13px; font-weight: 700; color: #FEF08A; margin-bottom: 8px;">CHI TIẾT VẬT TƯ / TÀI SẢN NHẬP KHO</div>
+                        <div class="form-group">
+                            <label>Loại Vật Tư / Tài Sản</label>
+                            <select id="inbound_category" onchange="toggleSerialInput(this.value)">
+                                <option value="consumable">Vật tư tiêu hao (Giấy in, mực, bút...)</option>
+                                <option value="fixed_asset">Tài sản cố định (Bộ đàm, Máy tính, Switch...)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Mã Vật Tư (Mã Chủng Loại)</label>
+                            <input type="text" id="inbound_item_code" value="VT-BD01" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Tên Vật Tư / Thiết Bị</label>
+                            <input type="text" id="inbound_name" value="Bộ Đàm Nghi Lễ Motorola" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Đơn Vị Tính</label>
+                            <input type="text" id="inbound_unit" value="Bộ" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Số Lượng Nhập Kho</label>
+                            <input type="number" id="inbound_quantity" value="2" min="1" required onchange="generateSerialFields(this.value)">
+                        </div>
+
+                        <!-- Dynamic Serial Numbers for Fixed Assets -->
+                        <div id="serial-container" style="display: none; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin-bottom: 14px;">
+                            <label style="color: #FEF08A; font-size: 12px;">DANH SÁCH SỐ SERIAL / MAC ADDRESS (Từng cái độc lập):</label>
+                            <div id="serial-fields-list" style="display: flex; flex-direction: column; gap: 6px; margin-top: 6px;"></div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-gold-gradient">
+                        <i class="fa-solid fa-check-double"></i> XÁC NHẬN NHẬP KHO LÔ HÀNG
+                    </button>
+                </form>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    <span><i class="fa-solid fa-list-check" style="color: #6EE7B7;"></i> LỊCH SỬ CÁC ĐỢT NHẬP KHO & IN TEM QR</span>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Mã Phiếu</th>
+                                <th>Nguồn Nhập</th>
+                                <th>Đơn Vị Giao</th>
+                                <th>Số Lượng</th>
+                                <th>Tải PDF Tem QR Lô</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inbound-history-tbody">
+                            <tr><td colspan="5" style="text-align: center;">Đang tải lịch sử nhập kho...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 5: KHO PHẾ PHẨM, THU HỒI & BIÊN BẢN THANH LÝ WORD (FEATURE 2) -->
+    <div id="tab-assets" class="tab-content">
+        <div class="card" style="margin-bottom: 20px;">
+            <div class="card-title">
+                <span><i class="fa-solid fa-triangle-exclamation" style="color: #EF4444;"></i> KHU VỰC THIẾT BỊ HỎNG HÓC & KHO PHẾ PHẨM CHỜ THANH LÝ</span>
+                <button class="btn btn-gold-gradient" onclick="exportDisposalWord()" style="width: auto; padding: 8px 14px; font-size: 13px;">
+                    <i class="fa-solid fa-file-word"></i> Xuất Word Biên Bản Thanh Lý Tài Sản A4
+                </button>
+            </div>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Mã Tem QR</th>
+                            <th>Mã Chủng Loại</th>
+                            <th>Tên Thiết Bị</th>
+                            <th>Số Serial</th>
+                            <th>Vị Trí Hiện Tại</th>
+                            <th>Trạng Thái Vòng Đời</th>
+                            <th>Thao Tác Thu Hồi / Thanh Lý</th>
+                        </tr>
+                    </thead>
+                    <tbody id="assets-table-body">
+                        <tr><td colspan="7" style="text-align: center;">Đang tải danh sách thiết bị phế phẩm...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 6: THẺ KHO DẤU VẾT, BÁO CÁO NXT EXCEL & KIỂM KÊ (FEATURE 3) -->
+    <div id="tab-reports" class="tab-content">
+        <div class="grid-layout">
+            <div class="card">
+                <div class="card-title">
+                    <span><i class="fa-solid fa-calculator" style="color: #F59E0B;"></i> KIỂM KÊ KHO ĐỊNH KỲ & SO KHỚP CHÊNH LỆCH</span>
+                </div>
+                <form id="audit-reconciliation-form" onsubmit="handleAuditReconciliation(event)">
+                    <div class="form-group">
+                        <label>Tên Đợt Kiểm Kê</label>
+                        <input type="text" id="audit_title" value="Kiểm kê tài sản Quý 3/2026" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Cán Bộ Trưởng Đoàn Kiểm Kê</label>
+                        <input type="text" id="audit_inspector" value="Đại úy Nguyễn Văn A" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Danh Sách Mã Tem QR Đã Quét Thực Tế (Phân tách dấu phẩy)</label>
+                        <textarea id="audit_scanned_codes" rows="4" style="width: 100%; background: #2D0505; color: #FFFDF0; border: 1px solid #F59E0B; border-radius: 8px; padding: 10px;" placeholder="Ví dụ: TS-0001, TS-0002, TS-0003"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-gold-gradient">
+                        <i class="fa-solid fa-magnifying-glass-chart"></i> SO KHỚP & SINH BÁO CÁO CHÊNH LỆCH
+                    </button>
+                </form>
+                <div id="audit-result-box" style="display: none; margin-top: 16px; background: rgba(0,0,0,0.4); padding: 12px; border-radius: 8px; border: 1px solid #F59E0B;"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    <span><i class="fa-solid fa-file-excel" style="color: #10B981;"></i> THẺ KHO DẤU VẾT & TRÍCH XUẤT NXB EXCEL</span>
+                    <a href="/api/reports/nhat-ky-nxt-excel" target="_blank" class="btn btn-secondary" style="width: auto; padding: 6px 12px; font-size: 12px; text-decoration: none;">
+                        <i class="fa-solid fa-download"></i> Tải Excel Báo Cáo NXT
+                    </a>
+                </div>
+                <div class="form-group">
+                    <label>Chọn Vật Tư Để Trích Xuất Thẻ Kho Chi Tiết:</label>
+                    <select id="stock-card-select" onchange="loadStockCard(this.value)"></select>
+                </div>
+                <div id="stock-card-content" style="max-height: 350px; overflow-y: auto; font-size: 12px;">
+                    <div style="text-align: center; color: #FDE68A;">Vui lòng chọn vật tư để xem lịch sử thẻ kho...</div>
                 </div>
             </div>
         </div>
@@ -2491,8 +2663,215 @@
         }
     }
 
+    // TAB 4: INBOUND BATCH & SERIAL FUNCTIONS
+    function toggleSerialInput(category) {
+        const container = document.getElementById('serial-container');
+        if (category === 'fixed_asset') {
+            container.style.display = 'block';
+            generateSerialFields(document.getElementById('inbound_quantity').value);
+        } else {
+            container.style.display = 'none';
+        }
+    }
+
+    function generateSerialFields(qty) {
+        const category = document.getElementById('inbound_category').value;
+        if (category !== 'fixed_asset') return;
+
+        const count = parseInt(qty) || 1;
+        const list = document.getElementById('serial-fields-list');
+        list.innerHTML = '';
+        for (let i = 0; i < count; i++) {
+            list.innerHTML += `
+                <input type="text" class="inbound-serial-input" placeholder="Nhập Số Serial / MAC thiết bị #${i+1}" value="SN-MOT-${Math.floor(100000 + Math.random() * 900000)}">
+            `;
+        }
+    }
+
+    async function handleInboundSubmit(e) {
+        e.preventDefault();
+        const category = document.getElementById('inbound_category').value;
+        const serialInputs = document.querySelectorAll('.inbound-serial-input');
+        const serials = Array.from(serialInputs).map(inp => inp.value.trim()).filter(v => v.length > 0);
+
+        const payload = {
+            source: document.getElementById('inbound_source').value,
+            supplier_or_unit: document.getElementById('inbound_supplier').value,
+            created_by: document.getElementById('inbound_created_by').value,
+            items: [{
+                item_code: document.getElementById('inbound_item_code').value,
+                name: document.getElementById('inbound_name').value,
+                unit: document.getElementById('inbound_unit').value,
+                category: category,
+                quantity: parseInt(document.getElementById('inbound_quantity').value),
+                serial_numbers: serials
+            }]
+        };
+
+        try {
+            const res = await fetch('/api/inbound', {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                showToast("📦 " + data.message, "success");
+                loadInboundHistory();
+                loadItems();
+                loadAssets();
+            } else {
+                showToast(data.detail || "Lỗi nhập kho lô", "error");
+            }
+        } catch(err) {
+            showToast("Lỗi kết nối máy chủ khi nhập kho", "error");
+        }
+    }
+
+    async function loadInboundHistory() {
+        try {
+            const res = await fetch('/api/inbound/receipts');
+            const receipts = await res.json();
+            const tbody = document.getElementById('inbound-history-tbody');
+            if (receipts.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #FDE68A;">Chưa có phiếu nhập kho nào.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = receipts.map(r => `
+                <tr>
+                    <td><strong style="color: #FEF08A;">${r.receipt_code}</strong></td>
+                    <td>${r.source}</td>
+                    <td>${r.supplier_or_unit}</td>
+                    <td style="text-align: center; color: #6EE7B7;"><strong>${r.items_count}</strong></td>
+                    <td>
+                        <a href="/api/inbound/export-qr-pdf/${r.id}" target="_blank" class="btn btn-secondary" style="width: auto; padding: 4px 8px; font-size: 11px; text-decoration: none;">
+                            <i class="fa-solid fa-file-pdf" style="color: #EF4444;"></i> In PDF Tem QR Lô
+                        </a>
+                    </td>
+                </tr>
+            `).join('');
+        } catch(err) { console.error(err); }
+    }
+
+    // TAB 5: ASSET LIFECYCLE & DISPOSAL WORD
+    async function loadAssets() {
+        try {
+            const res = await fetch('/api/assets');
+            const assets = await res.json();
+            const tbody = document.getElementById('assets-table-body');
+            
+            if (assets.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #FDE68A;">Chưa có tài sản nào.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = assets.map(a => {
+                let badge = `<span class="badge-tag badge-exported"><i class="fa-solid fa-check"></i> Sẵn sàng</span>`;
+                if (a.status === 'damaged') badge = `<span class="badge-tag" style="background: rgba(220,38,38,0.3); color: #FCA5A5; border: 1px solid #EF4444;"><i class="fa-solid fa-triangle-exclamation"></i> Hỏng Hóc / Chờ Thu Hồi</span>`;
+                if (a.status === 'in_use') badge = `<span class="badge-tag badge-pending"><i class="fa-solid fa-user"></i> Đang Sử Dụng</span>`;
+
+                return `
+                    <tr>
+                        <td><strong style="color: #FEF08A;">${a.asset_code}</strong></td>
+                        <td>${a.item_code}</td>
+                        <td><strong>${a.name}</strong></td>
+                        <td style="color: #6EE7B7;">${a.serial_number}</td>
+                        <td>${a.location}</td>
+                        <td>${badge}</td>
+                        <td>
+                            ${a.status === 'damaged' ? `<button onclick="recoverAsset('${a.asset_code}')" class="btn btn-gold-gradient" style="padding: 4px 8px; font-size: 11px; width: auto;"><i class="fa-solid fa-rotate-left"></i> Thu Hồi Phế Phẩm</button>` : `<span style="font-size:11px; color:#FDE68A;">Bình thường</span>`}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        } catch(err) { console.error(err); }
+    }
+
+    async function recoverAsset(code) {
+        const res = await fetch(`/api/assets/recover?asset_code=${code}`, { method: 'POST' });
+        const data = await res.json();
+        if (res.ok) {
+            showToast("♻️ " + data.message);
+            loadAssets();
+        }
+    }
+
+    async function exportDisposalWord() {
+        window.open('/api/assets/disposal-word', '_blank');
+    }
+
+    // TAB 6: STOCK CARD & RECONCILIATION
+    async function loadStockCardSelect() {
+        const res = await fetch('/api/items');
+        const items = await res.json();
+        const select = document.getElementById('stock-card-select');
+        select.innerHTML = '<option value="">-- Chọn vật tư xem Thẻ kho --</option>' + items.map(i => `<option value="${i.id}">${i.item_code} - ${i.name}</option>`).join('');
+    }
+
+    async function loadStockCard(itemId) {
+        if (!itemId) return;
+        const res = await fetch(`/api/reports/stock-card/${itemId}`);
+        const data = await res.json();
+        const container = document.getElementById('stock-card-content');
+        
+        container.innerHTML = `
+            <div style="margin-bottom: 10px; border-bottom: 1px dashed rgba(245,158,11,0.4); padding-bottom: 8px;">
+                <strong style="color:#FEF08A; font-size: 14px;">THẺ KHO: ${data.item_code} - ${data.name}</strong>
+                <div>Tồn kho hiện tại: <strong style="color:#6EE7B7;">${data.current_stock} ${data.unit}</strong> | Vị trí: ${data.location}</div>
+            </div>
+            ${data.history.map(h => `
+                <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(245,158,11,0.2); border-radius: 6px; padding: 8px; margin-bottom: 6px;">
+                    <div style="display:flex; justify-between; color:#FDE68A;">
+                        <span>Hành động: <strong>${h.action_type.toUpperCase()}</strong></span>
+                        <span style="font-size:10px;">${new Date(h.timestamp).toLocaleString('vi-VN')}</span>
+                    </div>
+                    <div>Thực hiện: ${h.performer} ${h.asset_code !== 'N/A' ? `| Tem: ${h.asset_code}` : ''}</div>
+                    <div style="color:#A7F3D0; font-size: 11px;">Chi tiết: ${h.details}</div>
+                </div>
+            `).join('')}
+        `;
+    }
+
+    async function handleAuditReconciliation(e) {
+        e.preventDefault();
+        const title = document.getElementById('audit_title').value;
+        const inspector = document.getElementById('audit_inspector').value;
+        const rawCodes = document.getElementById('audit_scanned_codes').value;
+        const codes = rawCodes.split(',').map(s => s.trim()).filter(s => s.length > 0);
+
+        const res = await fetch('/api/reports/reconciliation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                title: title,
+                inspector_name: inspector,
+                scanned_asset_codes: codes
+            })
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+            showToast("🔍 " + data.message);
+            const box = document.getElementById('audit-result-box');
+            box.style.display = 'block';
+            box.innerHTML = `
+                <strong style="color:#FEF08A;">BÁO CÁO CHÊNH LỆCH KIỂM KÊ:</strong><br/>
+                - Tổng thực tế quét được: <strong>${data.total_scanned}</strong> | Tổng theo phần mềm: <strong>${data.total_expected}</strong><br/>
+                <span style="color:${data.discrepancy.missing_count > 0 ? '#EF4444' : '#10B981'};">
+                    - Số lượng THIẾU: ${data.discrepancy.missing_count} (${data.discrepancy.missing_assets.join(', ') || 'Không'})
+                </span><br/>
+                <span style="color:${data.discrepancy.surplus_count > 0 ? '#F59E0B' : '#10B981'};">
+                    - Số lượng THỪA: ${data.discrepancy.surplus_count} (${data.discrepancy.surplus_assets.join(', ') || 'Không'})
+                </span>
+            `;
+        }
+    }
+
     // Initial Load & Apply Role
     applyRoleUI();
+    loadInboundHistory();
+    loadAssets();
+    loadStockCardSelect();
 </script>
 
 </body>

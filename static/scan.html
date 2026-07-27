@@ -366,9 +366,14 @@
         <input type="number" id="export_qty" value="1" min="1">
     </div>
 
-    <button id="btn-submit-export" class="btn btn-gold-gradient" onclick="handleScanExport()">
-        <i class="fa-solid fa-check-circle"></i> XÁC NHẬN XUẤT KHO NGAY
-    </button>
+    <div style="display: flex; gap: 8px;">
+        <button id="btn-submit-export" class="btn btn-gold-gradient" onclick="handleScanExport()" style="flex: 2;">
+            <i class="fa-solid fa-check-circle"></i> XÁC NHẬN XUẤT KHO NGAY
+        </button>
+        <button id="btn-report-damaged" class="btn btn-danger-gradient" onclick="handleReportDamaged()" style="flex: 1; font-size: 12px; border-color: #EF4444; color: #FFFDF0;">
+            <i class="fa-solid fa-triangle-exclamation"></i> BÁO HỎNG
+        </button>
+    </div>
 
     <!-- Download Files Section -->
     <div id="download-section" style="display: none; margin-top: 16px; border-top: 1px dashed rgba(16, 185, 129, 0.3); padding-top: 14px;">
@@ -662,6 +667,35 @@
         document.getElementById('btn-submit-export').style.display = 'block';
         currentItem = null;
         initScanner();
+    }
+
+    async function handleReportDamaged() {
+        const code = document.getElementById('res-code').innerText;
+        const reporter = document.getElementById('requester_name').value || "Cán bộ sử dụng";
+        const reason = prompt(`Nhập lý do hỏng hóc thiết bị [${code}]:`, "Thiết bị hư hỏng linh kiện trong quá trình làm nhiệm vụ");
+        
+        if (!reason) return;
+        
+        try {
+            const res = await fetch('/api/assets/report-damaged', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    asset_code: code,
+                    reporter_name: reporter,
+                    reason: reason
+                })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                showToast("🚨 " + data.message, "success");
+                setTimeout(() => { location.reload(); }, 1800);
+            } else {
+                showToast(data.detail || "Lỗi khi báo hỏng thiết bị", "error");
+            }
+        } catch(err) {
+            showToast("Lỗi kết nối máy chủ", "error");
+        }
     }
 
     function showToast(msg, type = 'success') {
