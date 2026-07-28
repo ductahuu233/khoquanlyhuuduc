@@ -3057,11 +3057,21 @@
         }
     };
 
-    // HÀM CHUYỂN TAB & CẬP NHẬT DỮ LIỆU THỜI GIAN THỰC
+    // HÀM CHUYỂN TAB & CẬP NHẬT DỮ LIỆU THỜI GIAN THỰC GIỮA MÀN HÌNH
     async function switchTab(tabId, btn) {
-        showApiBadge("🔄 Đang cập nhật dữ liệu tab...");
+        let tabName = "dữ liệu tab";
+        if (tabId === 'tab-dashboard') tabName = "📊 Dashboard AI & Cảnh báo";
+        else if (tabId === 'tab-inventory') tabName = "📦 Danh mục Kho & Vật tư";
+        else if (tabId === 'tab-requests') tabName = "📋 Danh sách Yêu cầu Xuất kho";
+        else if (tabId === 'tab-export') tabName = "📄 Danh mục Duyệt xuất & Báo cáo";
+        else if (tabId === 'tab-inbound') tabName = "🚚 Lịch sử Nhập kho Lô & Tem QR";
+        else if (tabId === 'tab-recovery') tabName = "🚨 Danh mục Kho Phế phẩm & Thanh lý";
+        else if (tabId === 'tab-reports') tabName = "📈 Dữ liệu Thẻ kho & Kiểm kê";
 
-        // 1. Đổi trạng thái hiển thị Tab
+        // 1. Hiển thị Spinner Loading Giữa Màn Hình (Center Screen Overlay Loader)
+        showFullLoader(`🔄 Đang kết nối CSDL và làm mới ${tabName}...`);
+
+        // 2. Đổi trạng thái hiển thị Giao diện Tab
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
 
@@ -3069,34 +3079,29 @@
         if (target) target.classList.add('active');
         if (btn) btn.classList.add('active');
 
-        // 2. Kích hoạt API làm mới dữ liệu liên tục tương ứng từng Tab
+        // 3. Gọi API lấy dữ liệu mới nhất tương ứng từng Tab
         try {
             if (tabId === 'tab-dashboard') {
-                showApiBadge("📊 Đang làm mới Dashboard AI...");
                 await Promise.all([loadDashboardAnalytics(), loadAlerts()]);
             } else if (tabId === 'tab-inventory') {
-                showApiBadge("📦 Đang cập nhật CSDL Vật tư...");
                 await Promise.all([loadItems(), loadExportHistory()]);
             } else if (tabId === 'tab-requests') {
-                showApiBadge("📋 Đang cập nhật Yêu cầu Xuất kho...");
                 await loadRequests();
             } else if (tabId === 'tab-export') {
-                showApiBadge("📄 Đang làm mới danh mục Duyệt xuất...");
                 await loadItems();
             } else if (tabId === 'tab-inbound') {
-                showApiBadge("🚚 Đang tải Lịch sử Nhập kho lô...");
                 await Promise.all([loadInboundHistory(), loadItems()]);
             } else if (tabId === 'tab-recovery') {
-                showApiBadge("🚨 Đang làm mới Kho Phế phẩm...");
                 await loadAssets();
             } else if (tabId === 'tab-reports') {
-                showApiBadge("📊 Đang làm mới Thẻ kho & Kiểm kê...");
                 await loadStockCardSelect();
             }
         } catch(err) {
-            console.error("Lỗi cập nhật dữ liệu Tab:", err);
+            console.error("Lỗi cập nhật API Tab:", err);
+            showToast("Lỗi cập nhật CSDL cho Tab!", "error");
         } finally {
-            setTimeout(hideApiBadge, 350);
+            // Tắt Màn hình Loading Giữa Màn Hình sau khi gọi API xong
+            setTimeout(hideFullLoader, 300);
         }
     }
 
