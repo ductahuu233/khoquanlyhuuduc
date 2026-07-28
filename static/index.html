@@ -684,25 +684,31 @@
 </style>
 
 <div class="container">
-    <!-- Header -->
-    <header>
-        <div class="logo-title">
-            <div class="logo-icon"><img src="/static/logo.png" alt="Đoàn Nghi lễ CAND Logo" style="width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 0 10px rgba(245, 158, 11, 0.6));"></div>
+    <!-- Header Executive Streamlined Bar -->
+    <header style="display: flex; justify-content: space-between; align-items: center; padding: 14px 22px; flex-wrap: wrap; gap: 16px; background: linear-gradient(135deg, rgba(6, 78, 59, 0.9) 0%, rgba(4, 120, 87, 0.5) 100%); border: 1.5px solid #F59E0B; border-radius: 16px; margin-bottom: 24px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 20px rgba(245, 158, 11, 0.15);">
+        <!-- Left: Logo & Brand Title -->
+        <div class="logo-title" style="display: flex; align-items: center; gap: 14px;">
+            <div class="logo-icon" style="width: 58px; height: 58px;">
+                <img src="/static/logo.png" alt="Đoàn Nghi lễ CAND Logo" style="width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 0 10px rgba(245, 158, 11, 0.6));">
+            </div>
             <div>
-                <h1>HỆ THỐNG QUẢN LÝ KHO KỸ THUẬT VẬT TƯ</h1>
-                <div class="subtitle" style="font-weight: 800; color: #FEF08A; letter-spacing: 0.5px;">ĐOÀN NGHI LỄ CÔNG AN NHÂN DÂN</div>
+                <h1 style="font-size: 18px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin: 0; background: linear-gradient(90deg, #FEF08A, #6EE7B7); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">HỆ THỐNG QUẢN LÝ KHO KỸ THUẬT VẬT TƯ</h1>
+                <div class="subtitle" style="font-size: 12px; font-weight: 800; color: #FEF08A; letter-spacing: 0.5px; margin-top: 2px;">ĐOÀN NGHI LỄ CÔNG AN NHÂN DÂN</div>
             </div>
         </div>
-        <div style="display: flex; gap: 10px; align-items: center; position: relative;">
-            <!-- Notification Bell Icon (Feature C) -->
+
+        <!-- Right: Executive Action Bar (Unified 40px Height Flex Row) -->
+        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            
+            <!-- 1. Notification Bell -->
             <div style="position: relative;">
-                <button onclick="toggleAlertsDrawer()" style="background: rgba(4, 20, 15, 0.8); border: 1.5px solid #F59E0B; color: #FEF08A; width: 42px; height: 42px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; position: relative;">
+                <button onclick="toggleAlertsDrawer()" title="Thông báo khẩn kho" style="background: rgba(4, 20, 15, 0.85); border: 1.5px solid #F59E0B; color: #FEF08A; width: 40px; height: 40px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; position: relative; transition: all 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
                     <i class="fa-solid fa-bell"></i>
                     <span id="alert-badge-count" style="display: none; position: absolute; top: -5px; right: -5px; background: #DC2626; color: white; border-radius: 10px; padding: 2px 6px; font-size: 10px; font-weight: 800; border: 1px solid #FEF08A; box-shadow: 0 0 8px #DC2626;">0</span>
                 </button>
 
                 <!-- Alerts Dropdown Drawer -->
-                <div id="alerts-drawer" style="display: none; position: absolute; top: 50px; right: 0; width: 340px; background: #08241C; border: 1.5px solid #F59E0B; border-radius: 14px; box-shadow: 0 15px 40px rgba(0,0,0,0.8); z-index: 2500; padding: 14px;">
+                <div id="alerts-drawer" style="display: none; position: absolute; top: 48px; right: 0; width: 340px; background: #08241C; border: 1.5px solid #F59E0B; border-radius: 14px; box-shadow: 0 15px 40px rgba(0,0,0,0.8); z-index: 2500; padding: 14px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px dashed rgba(245,158,11,0.3);">
                         <strong style="color: #FEF08A; font-size: 13px;"><i class="fa-solid fa-triangle-exclamation" style="color: #F59E0B;"></i> THÔNG BÁO KHẨN KHO</strong>
                         <button onclick="toggleAlertsDrawer()" style="background: transparent; border: none; color: #A7F3D0; font-size: 16px; cursor: pointer;">&times;</button>
@@ -713,33 +719,37 @@
                 </div>
             </div>
 
-            <!-- Theme Switcher Button (Dark/Light Mode) -->
-            <button id="theme-toggle-btn" class="btn btn-secondary" onclick="toggleTheme()" style="width: auto; padding: 9px 14px; font-size: 13px;">
+            <!-- 2. Role Switcher Dropdown -->
+            <select id="role-select" onchange="changeRole(this.value)" style="height: 40px; padding: 0 12px; font-size: 13px; font-weight: 700; background: #04140F; color: #FEF08A; border: 1.5px solid #F59E0B; border-radius: 10px; cursor: pointer; white-space: nowrap; outline: none; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+                <option value="admin">👑 Vai Trò: Admin</option>
+                <option value="user">👤 Vai Trò: Cán Bộ</option>
+            </select>
+
+            <!-- 3. Primary Mobile QR Scanner Button -->
+            <a href="/scan" class="header-action-btn" style="height: 40px; padding: 0 14px; font-size: 13px; font-weight: 700; background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%); color: #FEF08A; border: 1.5px solid #F59E0B; border-radius: 10px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; white-space: nowrap; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4); transition: all 0.2s;">
+                <i class="fa-solid fa-qrcode" style="font-size: 15px;"></i> Quét QR Di Động
+            </a>
+
+            <!-- 4. Security Audit Trail Log Button -->
+            <button onclick="openAuditModal()" class="header-action-btn" style="height: 40px; padding: 0 12px; font-size: 13px; font-weight: 700; background: #1E3A34; color: #A7F3D0; border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; transition: all 0.2s;">
+                <i class="fa-solid fa-user-shield" style="color: #6EE7B7;"></i> Nhật Ký
+            </button>
+
+            <!-- 5. Theme Toggle Button -->
+            <button id="theme-toggle-btn" onclick="toggleTheme()" class="header-action-btn" style="height: 40px; padding: 0 12px; font-size: 13px; font-weight: 700; background: #1E3A34; color: #FEF08A; border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; transition: all 0.2s;">
                 <i class="fa-solid fa-moon" style="color: #FEF08A;"></i> Giao Diện Tối
             </button>
 
-            <!-- Role Switcher -->
-            <select id="role-select" onchange="changeRole(this.value)" style="width: auto; padding: 9px 14px; font-size: 13px; font-weight: 700; background: #04140F; color: #FEF08A; border: 1.5px solid #F59E0B; border-radius: 8px;">
-                <option value="admin">👑 Vai Trò: Admin (Quản Trị)</option>
-                <option value="user">👤 Vai Trò: Cán Bộ / Nhân Viên</option>
-            </select>
-
-            <!-- Security Audit Log Button (Feature C) -->
-            <button class="btn btn-secondary" onclick="openAuditModal()" style="width: auto; padding: 9px 14px; font-size: 13px;">
-                <i class="fa-solid fa-user-shield"></i> Nhật Ký Bảo Mật
+            <!-- 6. Sample Data Generator -->
+            <button onclick="seedSampleData()" class="header-action-btn" title="Nạp dữ liệu thử nghiệm" style="height: 40px; padding: 0 12px; font-size: 13px; font-weight: 700; background: #1E3A34; color: #A7F3D0; border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; transition: all 0.2s;">
+                <i class="fa-solid fa-wand-magic-sparkles" style="color: #F59E0B;"></i> Nạp Mẫu
             </button>
 
-            <a href="/scan" class="btn btn-danger-gradient" style="width: auto; padding: 9px 14px; font-size: 13px; text-decoration: none;">
-                <i class="fa-solid fa-qrcode"></i> Quét Mã QR Di Động Hàng Loạt
-            </a>
-            <button class="btn btn-secondary" onclick="seedSampleData()" style="width: auto; padding: 9px 14px; font-size: 13px;">
-                <i class="fa-solid fa-wand-magic-sparkles"></i> Nạp Dữ Liệu Mẫu
-            </button>
-
-            <!-- Logout Button -->
-            <button class="btn btn-secondary" onclick="handleLogout()" style="width: auto; padding: 9px 14px; font-size: 13px; border-color: #EF4444; color: #FCA5A5;">
+            <!-- 7. Logout Button -->
+            <button onclick="handleLogout()" class="header-action-btn" title="Đăng xuất khỏi hệ thống" style="height: 40px; padding: 0 12px; font-size: 13px; font-weight: 700; background: rgba(153, 27, 27, 0.35); color: #FCA5A5; border: 1.5px solid #EF4444; border-radius: 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; transition: all 0.2s;">
                 <i class="fa-solid fa-right-from-bracket"></i> Đăng Xuất
             </button>
+
         </div>
     </header>
 
