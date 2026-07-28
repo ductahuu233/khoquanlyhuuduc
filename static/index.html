@@ -15,21 +15,21 @@
     
     <style>
         :root {
-            --bg-body: #1F0202;
-            --bg-card: rgba(55, 8, 8, 0.92);
-            --bg-card-hover: rgba(80, 12, 12, 0.95);
-            --primary: #B91C1C;
-            --primary-hover: #991B1B;
-            --secondary: #3C0A0A;
-            --accent-gold: #F59E0B;
+            --bg-body: #FFF8F8;
+            --bg-card: #FFFFFF;
+            --bg-card-hover: #FFF1F1;
+            --primary: #DC2626;
+            --primary-hover: #B91C1C;
+            --secondary: #FFF1F1;
+            --accent-gold: #D97706;
             --accent-red: #DC2626;
-            --success: #10B981;
-            --success-hover: #059669;
-            --warning: #F59E0B;
-            --danger: #EF4444;
-            --text-main: #FFFDF0;
-            --text-muted: #FDE68A;
-            --border-color: rgba(245, 158, 11, 0.35);
+            --success: #059669;
+            --success-hover: #047857;
+            --warning: #D97706;
+            --danger: #DC2626;
+            --text-main: #1F2937;
+            --text-muted: #7F1D1D;
+            --border-color: #FCA5A5;
             --radius: 12px;
         }
 
@@ -41,7 +41,7 @@
         }
 
         body {
-            background: radial-gradient(circle at top center, #800A0A 0%, #4A0505 55%, #1F0202 100%);
+            background: radial-gradient(circle at top center, #FFE6E6 0%, #FFF5F5 45%, #F8FAFC 100%);
             color: var(--text-main);
             padding: 24px;
             min-height: 100vh;
@@ -52,17 +52,17 @@
             margin: 0 auto;
         }
 
-        /* Header VNeID Style */
+        /* Header Red & Gold Luxury Style */
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 16px 24px;
-            background: linear-gradient(135deg, rgba(163, 15, 15, 0.95) 0%, rgba(105, 10, 10, 0.85) 100%);
+            background: linear-gradient(135deg, #B91C1C 0%, #8B0000 60%, #700000 100%);
             border: 1.5px solid #F59E0B;
             border-radius: 16px;
             margin-bottom: 24px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 25px rgba(245, 158, 11, 0.25);
+            box-shadow: 0 10px 30px rgba(139, 0, 0, 0.25), 0 0 20px rgba(245, 158, 11, 0.2);
         }
 
         .logo-title {
@@ -83,35 +83,36 @@
         h1 {
             font-size: 20px;
             font-weight: 800;
-            background: linear-gradient(90deg, #FEF08A, #6EE7B7);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: #FFFFFF;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
 
         .subtitle {
             font-size: 13px;
-            color: #A7F3D0;
+            color: #FEF08A;
             margin-top: 2px;
+            font-weight: 800;
         }
 
-        /* Navigation Tabs VNeID Style */
+        /* Navigation Tabs Red & White Harmony */
         .tabs {
             display: flex;
             gap: 10px;
             margin-bottom: 24px;
-            background: rgba(40, 5, 5, 0.85);
+            background: #FFFFFF;
             padding: 8px;
             border-radius: 14px;
-            border: 1.5px solid rgba(245, 158, 11, 0.4);
+            border: 1.5px solid #FCA5A5;
+            box-shadow: 0 4px 15px rgba(185, 28, 28, 0.08);
         }
 
         .tab-btn {
             flex: 1;
             background: transparent;
             border: none;
-            color: #FDE68A;
+            color: #991B1B;
             padding: 12px 16px;
             border-radius: 10px;
             cursor: pointer;
@@ -125,14 +126,14 @@
         }
 
         .tab-btn:hover {
-            color: #FFFDF0;
-            background: rgba(245, 158, 11, 0.18);
+            color: #7F1D1D;
+            background: #FEE2E2;
         }
 
         .tab-btn.active {
             background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%);
-            color: #FEF08A;
-            box-shadow: 0 4px 15px rgba(220, 38, 38, 0.5);
+            color: #FFFFFF;
+            box-shadow: 0 4px 15px rgba(220, 38, 38, 0.35);
             border: 1.5px solid #F59E0B;
         }
 
@@ -167,35 +168,35 @@
         }
 
         .card {
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-color);
+            background-color: #FFFFFF;
+            border: 1.5px solid #FECDD3;
             border-radius: var(--radius);
             padding: 22px;
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(153, 27, 27, 0.08);
         }
 
         .card-title {
             font-size: 16px;
-            font-weight: 700;
+            font-weight: 800;
             margin-bottom: 18px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            color: #FEF08A;
-            border-bottom: 1px dashed rgba(245, 158, 11, 0.3);
+            color: #991B1B;
+            border-bottom: 1.5px dashed #FCA5A5;
             padding-bottom: 10px;
         }
 
-        /* Stat KPI Card VNeID Style */
+        /* Stat KPI Card Red & White Style */
         .kpi-card {
-            background: rgba(45, 5, 5, 0.85);
-            border: 1px solid rgba(245, 158, 11, 0.4);
+            background: linear-gradient(135deg, #FFF1F1 0%, #FFFFFF 100%);
+            border: 1.5px solid #FCA5A5;
             border-radius: 12px;
             padding: 16px;
             display: flex;
             align-items: center;
             gap: 14px;
+            box-shadow: 0 4px 12px rgba(153, 27, 27, 0.05);
         }
 
         .kpi-icon {
@@ -208,7 +209,7 @@
             font-size: 20px;
         }
 
-        /* Forms VNeID Style */
+        /* Forms Red & White Style */
         .form-group {
             margin-bottom: 16px;
         }
@@ -216,16 +217,17 @@
         label {
             display: block;
             font-size: 13px;
-            color: #FDE68A;
+            color: #991B1B;
             margin-bottom: 6px;
-            font-weight: 600;
+            font-weight: 700;
         }
 
         input, select {
             width: 100%;
-            background-color: #2D0505;
-            border: 1px solid rgba(245, 158, 11, 0.4);
-            color: #FFFDF0;
+            background-color: #FFFFFF;
+            border: 1.5px solid #FCA5A5;
+            color: #111827;
+            font-weight: 600;
             padding: 11px 14px;
             border-radius: 8px;
             font-size: 14px;
@@ -234,14 +236,14 @@
         }
 
         input:focus, select:focus {
-            border-color: #F59E0B;
-            box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
+            border-color: #DC2626;
+            box-shadow: 0 0 10px rgba(220, 38, 38, 0.25);
         }
 
         .btn {
             background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%);
-            color: #FEF08A;
-            border: 1px solid #F59E0B;
+            color: #FFFFFF;
+            border: 1px solid #B91C1C;
             padding: 11px 18px;
             border-radius: 8px;
             font-weight: 700;
@@ -253,7 +255,7 @@
             justify-content: center;
             gap: 8px;
             transition: all 0.2s;
-            box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4);
+            box-shadow: 0 4px 14px rgba(220, 38, 38, 0.35);
         }
 
         .btn:hover {
@@ -264,7 +266,7 @@
         .btn-danger-gradient {
             background: linear-gradient(135deg, #991B1B 0%, #7F0909 100%);
             border-color: #EF4444;
-            color: #FFFDF0;
+            color: #FFFFFF;
         }
         .btn-danger-gradient:hover {
             background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%);
@@ -273,23 +275,24 @@
         .btn-gold-gradient {
             background: linear-gradient(135deg, #D97706 0%, #B45309 100%);
             border-color: #F59E0B;
-            color: #FEF08A;
+            color: #FFFFFF;
         }
         .btn-gold-gradient:hover {
             background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
         }
 
         .btn-secondary {
-            background-color: #3C0A0A;
-            border-color: rgba(245, 158, 11, 0.35);
-            color: #FDE68A;
+            background-color: #FFF1F1;
+            border: 1.5px solid #FCA5A5;
+            color: #991B1B;
+            font-weight: 700;
         }
         .btn-secondary:hover {
-            background-color: #551010;
-            color: #FEF08A;
+            background-color: #FEE2E2;
+            color: #7F1D1D;
         }
 
-        /* Table */
+        /* Table Red & White Style */
         .table-responsive {
             overflow-x: auto;
         }
@@ -302,18 +305,19 @@
         }
 
         th {
-            background-color: rgba(30, 4, 4, 0.9);
-            color: #FEF08A;
-            font-weight: 700;
+            background: linear-gradient(135deg, #8B0000 0%, #700000 100%);
+            color: #FFFFFF;
+            font-weight: 800;
             padding: 13px;
-            border-bottom: 1.5px solid rgba(245, 158, 11, 0.4);
+            border-bottom: 2px solid #F59E0B;
             white-space: nowrap;
         }
 
         td {
             padding: 13px;
-            border-bottom: 1px solid rgba(245, 158, 11, 0.18);
-            color: #FFFDF0;
+            border-bottom: 1px solid #FEE2E2;
+            color: #1F2937;
+            background: #FFFFFF;
         }
 
         tr.item-row {
@@ -322,19 +326,19 @@
         }
 
         tr.item-row:hover td {
-            background-color: rgba(245, 158, 11, 0.15);
+            background-color: #FFF1F1;
         }
 
         .item-name-clickable {
-            color: #FDE68A;
-            font-weight: 700;
+            color: #B91C1C;
+            font-weight: 800;
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
         .item-name-clickable:hover {
-            color: #FEF08A;
+            color: #DC2626;
             text-decoration: underline;
         }
 
