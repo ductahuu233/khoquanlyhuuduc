@@ -3057,6 +3057,49 @@
         }
     };
 
+    // HÀM CHUYỂN TAB & CẬP NHẬT DỮ LIỆU THỜI GIAN THỰC
+    async function switchTab(tabId, btn) {
+        showApiBadge("🔄 Đang cập nhật dữ liệu tab...");
+
+        // 1. Đổi trạng thái hiển thị Tab
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+
+        const target = document.getElementById(tabId);
+        if (target) target.classList.add('active');
+        if (btn) btn.classList.add('active');
+
+        // 2. Kích hoạt API làm mới dữ liệu liên tục tương ứng từng Tab
+        try {
+            if (tabId === 'tab-dashboard') {
+                showApiBadge("📊 Đang làm mới Dashboard AI...");
+                await Promise.all([loadDashboardAnalytics(), loadAlerts()]);
+            } else if (tabId === 'tab-inventory') {
+                showApiBadge("📦 Đang cập nhật CSDL Vật tư...");
+                await Promise.all([loadItems(), loadExportHistory()]);
+            } else if (tabId === 'tab-requests') {
+                showApiBadge("📋 Đang cập nhật Yêu cầu Xuất kho...");
+                await loadRequests();
+            } else if (tabId === 'tab-export') {
+                showApiBadge("📄 Đang làm mới danh mục Duyệt xuất...");
+                await loadItems();
+            } else if (tabId === 'tab-inbound') {
+                showApiBadge("🚚 Đang tải Lịch sử Nhập kho lô...");
+                await Promise.all([loadInboundHistory(), loadItems()]);
+            } else if (tabId === 'tab-recovery') {
+                showApiBadge("🚨 Đang làm mới Kho Phế phẩm...");
+                await loadAssets();
+            } else if (tabId === 'tab-reports') {
+                showApiBadge("📊 Đang làm mới Thẻ kho & Kiểm kê...");
+                await loadStockCardSelect();
+            }
+        } catch(err) {
+            console.error("Lỗi cập nhật dữ liệu Tab:", err);
+        } finally {
+            setTimeout(hideApiBadge, 350);
+        }
+    }
+
     // Initial Load & Apply Role
     initTheme();
     applyRoleUI();
