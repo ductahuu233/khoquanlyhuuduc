@@ -15,21 +15,21 @@
     
     <style>
         :root {
-            --bg-body: #FFF8F8;
+            --bg-body: #F8F6F0;
             --bg-card: #FFFFFF;
-            --bg-card-hover: #FFF1F1;
-            --primary: #DC2626;
-            --primary-hover: #B91C1C;
-            --secondary: #FFF1F1;
-            --accent-gold: #D97706;
-            --accent-red: #DC2626;
+            --bg-card-hover: #FBF8F3;
+            --primary: #8C1C1C;
+            --primary-hover: #6B1111;
+            --secondary: #F4EFE6;
+            --accent-gold: #D4A341;
+            --accent-red: #8C1C1C;
             --success: #059669;
             --success-hover: #047857;
-            --warning: #D97706;
-            --danger: #DC2626;
-            --text-main: #1F2937;
-            --text-muted: #7F1D1D;
-            --border-color: #FCA5A5;
+            --warning: #D4A341;
+            --danger: #9B1C1C;
+            --text-main: #2C251E;
+            --text-muted: #6B1111;
+            --border-color: #E6DDD0;
             --radius: 12px;
         }
 
@@ -41,7 +41,7 @@
         }
 
         body {
-            background: radial-gradient(circle at top center, #FFE6E6 0%, #FFF5F5 45%, #F8FAFC 100%);
+            background: radial-gradient(circle at top center, #F4EBE2 0%, #F8F6F0 60%, #F2ECE4 100%);
             color: var(--text-main);
             padding: 24px;
             min-height: 100vh;
@@ -52,17 +52,17 @@
             margin: 0 auto;
         }
 
-        /* Header Red & Gold Luxury Style */
+        /* Header Executive Burgundy & Gold Style */
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 16px 24px;
-            background: linear-gradient(135deg, #B91C1C 0%, #8B0000 60%, #700000 100%);
-            border: 1.5px solid #F59E0B;
+            background: linear-gradient(135deg, #7A1515 0%, #590E0E 60%, #420808 100%);
+            border: 1.5px solid #D4A341;
             border-radius: 16px;
             margin-bottom: 24px;
-            box-shadow: 0 10px 30px rgba(139, 0, 0, 0.25), 0 0 20px rgba(245, 158, 11, 0.2);
+            box-shadow: 0 12px 32px rgba(90, 14, 14, 0.22), 0 0 15px rgba(212, 163, 65, 0.15);
         }
 
         .logo-title {
@@ -83,36 +83,37 @@
         h1 {
             font-size: 20px;
             font-weight: 800;
-            color: #FFFFFF;
+            color: #FFF9EE;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.4);
         }
 
         .subtitle {
             font-size: 13px;
-            color: #FEF08A;
+            color: #FBE2A7;
             margin-top: 2px;
             font-weight: 800;
+            letter-spacing: 0.5px;
         }
 
-        /* Navigation Tabs Red & White Harmony */
+        /* Navigation Tabs Warm Ivory & Burgundy */
         .tabs {
             display: flex;
             gap: 10px;
             margin-bottom: 24px;
-            background: #FFFFFF;
+            background: #EFEAE1;
             padding: 8px;
             border-radius: 14px;
-            border: 1.5px solid #FCA5A5;
-            box-shadow: 0 4px 15px rgba(185, 28, 28, 0.08);
+            border: 1px solid #DFD6C8;
+            box-shadow: 0 4px 12px rgba(107, 17, 17, 0.04);
         }
 
         .tab-btn {
             flex: 1;
             background: transparent;
             border: none;
-            color: #991B1B;
+            color: #6B1111;
             padding: 12px 16px;
             border-radius: 10px;
             cursor: pointer;
@@ -126,15 +127,15 @@
         }
 
         .tab-btn:hover {
-            color: #7F1D1D;
-            background: #FEE2E2;
+            color: #4E0C0C;
+            background: #E5DDD0;
         }
 
         .tab-btn.active {
-            background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%);
-            color: #FFFFFF;
-            box-shadow: 0 4px 15px rgba(220, 38, 38, 0.35);
-            border: 1.5px solid #F59E0B;
+            background: linear-gradient(135deg, #8C1C1C 0%, #6B1111 100%);
+            color: #FFF9EE;
+            box-shadow: 0 4px 14px rgba(140, 28, 28, 0.3);
+            border: 1.5px solid #D4A341;
         }
 
         /* Content Sections */
@@ -169,10 +170,10 @@
 
         .card {
             background-color: #FFFFFF;
-            border: 1.5px solid #FECDD3;
+            border: 1px solid #E6DDD0;
             border-radius: var(--radius);
             padding: 22px;
-            box-shadow: 0 10px 30px rgba(153, 27, 27, 0.08);
+            box-shadow: 0 10px 28px rgba(107, 17, 17, 0.04);
         }
 
         .card-title {
@@ -182,21 +183,21 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            color: #991B1B;
-            border-bottom: 1.5px dashed #FCA5A5;
+            color: #6B1111;
+            border-bottom: 1.5px dashed #DCD3C5;
             padding-bottom: 10px;
         }
 
-        /* Stat KPI Card Red & White Style */
+        /* Stat KPI Card Warm Style */
         .kpi-card {
-            background: linear-gradient(135deg, #FFF1F1 0%, #FFFFFF 100%);
-            border: 1.5px solid #FCA5A5;
+            background: linear-gradient(135deg, #FAF6F0 0%, #FFFFFF 100%);
+            border: 1.5px solid #E6DDD0;
             border-radius: 12px;
             padding: 16px;
             display: flex;
             align-items: center;
             gap: 14px;
-            box-shadow: 0 4px 12px rgba(153, 27, 27, 0.05);
+            box-shadow: 0 4px 12px rgba(107, 17, 17, 0.03);
         }
 
         .kpi-icon {
@@ -209,7 +210,7 @@
             font-size: 20px;
         }
 
-        /* Forms Red & White Style */
+        /* Forms Warm Porcelain Style */
         .form-group {
             margin-bottom: 16px;
         }
@@ -217,16 +218,16 @@
         label {
             display: block;
             font-size: 13px;
-            color: #991B1B;
+            color: #6B1111;
             margin-bottom: 6px;
             font-weight: 700;
         }
 
         input, select {
             width: 100%;
-            background-color: #FFFFFF;
-            border: 1.5px solid #FCA5A5;
-            color: #111827;
+            background-color: #FAF8F5;
+            border: 1.5px solid #DCD3C5;
+            color: #2C251E;
             font-weight: 600;
             padding: 11px 14px;
             border-radius: 8px;
@@ -236,14 +237,15 @@
         }
 
         input:focus, select:focus {
-            border-color: #DC2626;
-            box-shadow: 0 0 10px rgba(220, 38, 38, 0.25);
+            border-color: #8C1C1C;
+            box-shadow: 0 0 10px rgba(140, 28, 28, 0.2);
+            background-color: #FFFFFF;
         }
 
         .btn {
-            background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%);
-            color: #FFFFFF;
-            border: 1px solid #B91C1C;
+            background: linear-gradient(135deg, #8C1C1C 0%, #6B1111 100%);
+            color: #FFF9EE;
+            border: 1px solid #7A1515;
             padding: 11px 18px;
             border-radius: 8px;
             font-weight: 700;
@@ -255,44 +257,44 @@
             justify-content: center;
             gap: 8px;
             transition: all 0.2s;
-            box-shadow: 0 4px 14px rgba(220, 38, 38, 0.35);
+            box-shadow: 0 4px 14px rgba(140, 28, 28, 0.28);
         }
 
         .btn:hover {
-            background: linear-gradient(135deg, #EF4444 0%, #B91C1C 100%);
+            background: linear-gradient(135deg, #A22222 0%, #7A1515 100%);
             transform: translateY(-1px);
         }
 
         .btn-danger-gradient {
-            background: linear-gradient(135deg, #991B1B 0%, #7F0909 100%);
-            border-color: #EF4444;
-            color: #FFFFFF;
+            background: linear-gradient(135deg, #6B1111 0%, #4A0B0B 100%);
+            border-color: #9B1C1C;
+            color: #FFF9EE;
         }
         .btn-danger-gradient:hover {
-            background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%);
+            background: linear-gradient(135deg, #8C1C1C 0%, #6B1111 100%);
         }
 
         .btn-gold-gradient {
-            background: linear-gradient(135deg, #D97706 0%, #B45309 100%);
-            border-color: #F59E0B;
-            color: #FFFFFF;
+            background: linear-gradient(135deg, #B58428 0%, #8C6215 100%);
+            border-color: #D4A341;
+            color: #FFF9EE;
         }
         .btn-gold-gradient:hover {
-            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+            background: linear-gradient(135deg, #D4A341 0%, #B58428 100%);
         }
 
         .btn-secondary {
-            background-color: #FFF1F1;
-            border: 1.5px solid #FCA5A5;
-            color: #991B1B;
+            background-color: #F4EFE6;
+            border: 1.5px solid #DCD3C5;
+            color: #6B1111;
             font-weight: 700;
         }
         .btn-secondary:hover {
-            background-color: #FEE2E2;
-            color: #7F1D1D;
+            background-color: #E6DDD0;
+            color: #4E0C0C;
         }
 
-        /* Table Red & White Style */
+        /* Table Warm Executive Style */
         .table-responsive {
             overflow-x: auto;
         }
@@ -305,18 +307,18 @@
         }
 
         th {
-            background: linear-gradient(135deg, #8B0000 0%, #700000 100%);
-            color: #FFFFFF;
+            background: linear-gradient(135deg, #6B1111 0%, #4E0C0C 100%);
+            color: #FFF9EE;
             font-weight: 800;
             padding: 13px;
-            border-bottom: 2px solid #F59E0B;
+            border-bottom: 2px solid #D4A341;
             white-space: nowrap;
         }
 
         td {
             padding: 13px;
-            border-bottom: 1px solid #FEE2E2;
-            color: #1F2937;
+            border-bottom: 1px solid #EFEAE1;
+            color: #2C251E;
             background: #FFFFFF;
         }
 
@@ -326,11 +328,11 @@
         }
 
         tr.item-row:hover td {
-            background-color: #FFF1F1;
+            background-color: #FBF6EE;
         }
 
         .item-name-clickable {
-            color: #B91C1C;
+            color: #8C1C1C;
             font-weight: 800;
             display: flex;
             align-items: center;
@@ -338,7 +340,7 @@
         }
 
         .item-name-clickable:hover {
-            color: #DC2626;
+            color: #A22222;
             text-decoration: underline;
         }
 
