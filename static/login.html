@@ -207,7 +207,29 @@
     </div>
 </div>
 
+<!-- GLOBAL LOADING OVERLAY -->
+<div id="global-loader" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(4, 20, 15, 0.85); backdrop-filter: blur(8px); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; gap: 16px;">
+    <div style="width: 56px; height: 56px; border: 4px solid rgba(245, 158, 11, 0.2); border-top: 4px solid #F59E0B; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+    <div id="loader-text" style="color: #FEF08A; font-weight: 700; font-size: 15px; letter-spacing: 0.5px; text-shadow: 0 0 10px rgba(245,158,11,0.5);">Đang xác thực thông tin...</div>
+</div>
+
+<style>
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
+
 <script>
+    function showLoader(msg = "Đang xử lý dữ liệu hệ thống...") {
+        document.getElementById('loader-text').textContent = msg;
+        document.getElementById('global-loader').style.display = 'flex';
+    }
+
+    function hideLoader() {
+        document.getElementById('global-loader').style.display = 'none';
+    }
+
     function selectAccount(u, p) {
         document.getElementById('username').value = u;
         document.getElementById('password').value = p;
@@ -217,6 +239,12 @@
         e.preventDefault();
         const un = document.getElementById('username').value.trim();
         const pw = document.getElementById('password').value.trim();
+        const loginBtn = document.querySelector('button[type="submit"]');
+
+        // Bật loading spinner
+        showLoader("🔑 Đang kiểm tra mã niêm phong và xác thực cán bộ...");
+        loginBtn.disabled = true;
+        loginBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> ĐANG ĐĂNG NHẬP...`;
 
         try {
             const res = await fetch('/api/auth/login', {
@@ -230,14 +258,21 @@
                 localStorage.setItem('auth_user', JSON.stringify(data.user));
                 localStorage.setItem('user-role', data.user.role);
                 
-                showToast("✅ Đăng nhập thành công! Đang chuyển hướng...", "success");
+                showLoader(`✅ ${data.message} Đang tải dữ liệu kho...`);
+                showToast("✅ Đăng nhập thành công!", "success");
                 setTimeout(() => {
                     window.location.href = "/";
-                }, 1000);
+                }, 800);
             } else {
+                hideLoader();
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = `<i class="fa-solid fa-right-to-bracket"></i> ĐĂNG NHẬP HỆ THỐNG KHO`;
                 showToast(data.detail || "Đăng nhập thất bại!", "error");
             }
         } catch(err) {
+            hideLoader();
+            loginBtn.disabled = false;
+            loginBtn.innerHTML = `<i class="fa-solid fa-right-to-bracket"></i> ĐĂNG NHẬP HỆ THỐNG KHO`;
             showToast("Lỗi kết nối máy chủ nội bộ!", "error");
         }
     }

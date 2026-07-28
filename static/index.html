@@ -664,6 +664,25 @@
 </head>
 <body>
 
+<!-- GLOBAL LOADING OVERLAY & SPINNER -->
+<div id="global-loader" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(4, 20, 15, 0.85); backdrop-filter: blur(6px); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; gap: 16px;">
+    <div style="width: 56px; height: 56px; border: 4px solid rgba(245, 158, 11, 0.2); border-top: 4px solid #F59E0B; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+    <div id="loader-text" style="color: #FEF08A; font-weight: 700; font-size: 15px; letter-spacing: 0.5px; text-shadow: 0 0 10px rgba(245,158,11,0.5);">Đang tải dữ liệu kho...</div>
+</div>
+
+<!-- FLOATING CORNER API INDICATOR -->
+<div id="api-loading-badge" style="display: none; position: fixed; bottom: 24px; left: 24px; background: rgba(8, 36, 28, 0.95); border: 1.5px solid #F59E0B; color: #FEF08A; padding: 10px 16px; border-radius: 30px; font-weight: 700; font-size: 13px; z-index: 9000; align-items: center; gap: 10px; box-shadow: 0 8px 25px rgba(0,0,0,0.6);">
+    <i class="fa-solid fa-circle-notch fa-spin" style="color: #F59E0B; font-size: 16px;"></i>
+    <span id="api-loading-text">Đang kết nối CSDL...</span>
+</div>
+
+<style>
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
+
 <div class="container">
     <!-- Header -->
     <header>
@@ -2990,6 +3009,53 @@
             window.location.href = "/login";
         }, 800);
     }
+
+    // GLOBAL FETCH INTERCEPTOR & LOADING SPINNER HELPERS
+    let activeApiRequests = 0;
+
+    function showApiBadge(msg = "Đang xử lý API CSDL...") {
+        activeApiRequests++;
+        const badge = document.getElementById('api-loading-badge');
+        const text = document.getElementById('api-loading-text');
+        if (badge && text) {
+            text.textContent = msg;
+            badge.style.display = 'flex';
+        }
+    }
+
+    function hideApiBadge() {
+        activeApiRequests = Math.max(0, activeApiRequests - 1);
+        if (activeApiRequests === 0) {
+            const badge = document.getElementById('api-loading-badge');
+            if (badge) badge.style.display = 'none';
+        }
+    }
+
+    function showFullLoader(msg = "Đang xử lý dữ liệu kho...") {
+        const loader = document.getElementById('global-loader');
+        const text = document.getElementById('loader-text');
+        if (loader && text) {
+            text.textContent = msg;
+            loader.style.display = 'flex';
+        }
+    }
+
+    function hideFullLoader() {
+        const loader = document.getElementById('global-loader');
+        if (loader) loader.style.display = 'none';
+    }
+
+    // Ghi đè window.fetch tự động hiển thị Loading Icon Spinner mỗi khi gọi API
+    const nativeFetch = window.fetch;
+    window.fetch = async function(...args) {
+        showApiBadge("Đang kết nối CSDL...");
+        try {
+            const response = await nativeFetch(...args);
+            return response;
+        } finally {
+            setTimeout(hideApiBadge, 300);
+        }
+    };
 
     // Initial Load & Apply Role
     initTheme();
