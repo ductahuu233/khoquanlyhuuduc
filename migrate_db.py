@@ -20,6 +20,22 @@ def migrate():
         cursor.execute("ALTER TABLE items ADD COLUMN location VARCHAR DEFAULT 'Kho Kỹ Thuật'")
         print("Added column location to items")
 
+    # Check columns in users table
+    cursor.execute("PRAGMA table_info(users)")
+    u_columns = [col[1] for col in cursor.fetchall()]
+
+    if "hashed_password" not in u_columns:
+        cursor.execute("ALTER TABLE users ADD COLUMN hashed_password VARCHAR")
+        print("Added column hashed_password to users")
+
+    if "full_name" not in u_columns:
+        cursor.execute("ALTER TABLE users ADD COLUMN full_name VARCHAR")
+        print("Added column full_name to users")
+
+    if "department" not in u_columns:
+        cursor.execute("ALTER TABLE users ADD COLUMN department VARCHAR")
+        print("Added column department to users")
+
     conn.commit()
     conn.close()
     print("Database migration completed successfully!")

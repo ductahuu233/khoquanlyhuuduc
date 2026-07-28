@@ -3,14 +3,14 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from app.database import engine, Base
-from app.routes import items, requests, export, chat, analytics, audit, inbound, assets, reports
+from app.routes import items, requests, export, chat, analytics, audit, inbound, assets, reports, auth
 
 # Create all tables on startup
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title="Hệ Thống Quản Lý Kho & Vòng Đời Tài Sản (v3.0)",
-    description="Hệ thống quản lý vật tư & vòng đời tài sản chuyên nghiệp (Inbound Lô, Serial, Báo hỏng phế phẩm, Thẻ kho, Kiểm kê) - Đoàn Nghi lễ CAND",
+    title="Hệ Thống Quản Lý Kho & Vòng Đời Tài Sản (v3.0 Security Edition)",
+    description="Hệ thống quản lý vật tư & vòng đời tài sản chuyên nghiệp bảo mật mạng nội bộ - Đoàn Nghi lễ CAND",
     version="3.0.0"
 )
 
@@ -28,6 +28,7 @@ app.mount("/static", StaticFiles(directory=static_dir), name="static")
 app.mount("/uploads", StaticFiles(directory=uploads_dir), name="uploads")
 
 # Include Routers
+app.include_router(auth.router)
 app.include_router(items.router)
 app.include_router(requests.router)
 app.include_router(export.router)
@@ -44,6 +45,13 @@ def read_index():
     if os.path.exists(index_file):
         return FileResponse(index_file)
     return {"message": "Chào mừng đến với Hệ thống Quản lý Kho & Tài sản v3.0 - Đoàn Nghi lễ CAND"}
+
+@app.get("/login")
+def read_login():
+    login_file = os.path.join(static_dir, "login.html")
+    if os.path.exists(login_file):
+        return FileResponse(login_file)
+    return {"message": "Trang Đăng nhập Nội bộ"}
 
 @app.get("/scan")
 def read_scan():

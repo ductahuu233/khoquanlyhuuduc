@@ -11,7 +11,10 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True, nullable=False)
-    role = Column(String, default="storekeeper")  # admin, storekeeper, approver
+    hashed_password = Column(String, nullable=True)
+    full_name = Column(String, nullable=True)
+    department = Column(String, nullable=True)
+    role = Column(String, default="storekeeper")  # admin, storekeeper, approver/user
 
 class Item(Base):
     __tablename__ = "items"

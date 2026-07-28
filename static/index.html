@@ -716,6 +716,11 @@
             <button class="btn btn-secondary" onclick="seedSampleData()" style="width: auto; padding: 9px 14px; font-size: 13px;">
                 <i class="fa-solid fa-wand-magic-sparkles"></i> Nạp Dữ Liệu Mẫu
             </button>
+
+            <!-- Logout Button -->
+            <button class="btn btn-secondary" onclick="handleLogout()" style="width: auto; padding: 9px 14px; font-size: 13px; border-color: #EF4444; color: #FCA5A5;">
+                <i class="fa-solid fa-right-from-bracket"></i> Đăng Xuất
+            </button>
         </div>
     </header>
 
@@ -2976,6 +2981,14 @@
             document.body.classList.remove('light-theme');
         }
         updateThemeUI(savedTheme);
+    }
+
+    function handleLogout() {
+        localStorage.removeItem('auth_user');
+        showToast("🔑 Đã đăng xuất khỏi hệ thống kho nội bộ!");
+        setTimeout(() => {
+            window.location.href = "/login";
+        }, 800);
     }
 
     // Initial Load & Apply Role

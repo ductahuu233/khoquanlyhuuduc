@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng Nhập Mạng Nội Bộ - ĐOÀN NGHI LỄ CAND</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: radial-gradient(circle at top center, #0B3327 0%, #04140F 100%);
+            color: #F0FDF4;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: rgba(13, 43, 34, 0.95);
+            border: 1.5px solid #F59E0B;
+            border-radius: 20px;
+            padding: 36px;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 0 40px rgba(245, 158, 11, 0.25), 0 25px 60px rgba(0,0,0,0.8);
+            text-align: center;
+        }
+
+        .logo-box {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 0 12px rgba(245, 158, 11, 0.6));
+        }
+
+        h1 {
+            font-size: 18px;
+            font-weight: 800;
+            color: #FEF08A;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: #A7F3D0;
+            margin-bottom: 24px;
+            font-weight: 600;
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            color: #FEF08A;
+            margin-bottom: 6px;
+            font-weight: 700;
+        }
+
+        input {
+            width: 100%;
+            background-color: #04140F;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #F0FDF4;
+            padding: 12px 14px;
+            border-radius: 10px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        input:focus {
+            border-color: #F59E0B;
+            box-shadow: 0 0 12px rgba(245, 158, 11, 0.3);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%);
+            color: #FEF08A;
+            border: 1.5px solid #F59E0B;
+            padding: 13px;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 15px;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4);
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, #EF4444 0%, #B91C1C 100%);
+            transform: translateY(-1px);
+        }
+
+        .quick-accounts {
+            margin-top: 22px;
+            padding-top: 16px;
+            border-top: 1px dashed rgba(245, 158, 11, 0.3);
+            font-size: 11px;
+            color: #A7F3D0;
+            text-align: left;
+        }
+
+        .account-chip {
+            background: rgba(4, 20, 15, 0.8);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 8px;
+            padding: 8px 10px;
+            margin-top: 6px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: border-color 0.2s;
+        }
+
+        .account-chip:hover {
+            border-color: #F59E0B;
+        }
+
+        #toast {
+            display: none;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #08241C;
+            border: 1.5px solid #EF4444;
+            color: #FCA5A5;
+            padding: 12px 18px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            z-index: 3000;
+        }
+    </style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<div class="login-card">
+    <div class="logo-box">
+        <img src="/static/logo.png" alt="Logo CAND">
+    </div>
+    <h1>ĐOÀN NGHI LỄ CÔNG AN NHÂN DÂN</h1>
+    <div class="subtitle">CỔNG ĐĂNG NHẬP NỘI BỘ (AIR-GAPPED SYSTEM)</div>
+
+    <form onsubmit="handleLogin(event)">
+        <div class="form-group">
+            <label><i class="fa-solid fa-user-shield" style="color: #F59E0B;"></i> Tên Đăng Nhập Cán Bộ</label>
+            <input type="text" id="username" value="thukho" required placeholder="Nhập username...">
+        </div>
+        <div class="form-group">
+            <label><i class="fa-solid fa-lock" style="color: #F59E0B;"></i> Mật Khẩu Khóa Nội Bộ</label>
+            <input type="password" id="password" value="thukho123" required placeholder="Nhập mật khẩu...">
+        </div>
+
+        <button type="submit" class="btn">
+            <i class="fa-solid fa-right-to-bracket"></i> ĐĂNG NHẬP HỆ THỐNG KHO
+        </button>
+    </form>
+
+    <div class="quick-accounts">
+        <strong><i class="fa-solid fa-key" style="color: #F59E0B;"></i> Chọn nhanh tài khoản nội bộ thử nghiệm:</strong>
+        <div class="account-chip" onclick="selectAccount('admin', 'admin123')">
+            <span>👑 <strong>Trưởng Đoàn Nghi Lễ (admin)</strong></span>
+            <span style="color:#FEF08A;">admin123</span>
+        </div>
+        <div class="account-chip" onclick="selectAccount('thukho', 'thukho123')">
+            <span>📦 <strong>Thủ Kho Kỹ Thuật (thukho)</strong></span>
+            <span style="color:#FEF08A;">thukho123</span>
+        </div>
+        <div class="account-chip" onclick="selectAccount('canbo', 'canbo123')">
+            <span>👤 <strong>Cán Bộ Đội Nghi Lễ (canbo)</strong></span>
+            <span style="color:#FEF08A;">canbo123</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    function selectAccount(u, p) {
+        document.getElementById('username').value = u;
+        document.getElementById('password').value = p;
+    }
+
+    async function handleLogin(e) {
+        e.preventDefault();
+        const un = document.getElementById('username').value.trim();
+        const pw = document.getElementById('password').value.trim();
+
+        try {
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: un, password: pw })
+            });
+
+            const data = await res.json();
+            if (res.ok && data.success) {
+                localStorage.setItem('auth_user', JSON.stringify(data.user));
+                localStorage.setItem('user-role', data.user.role);
+                
+                showToast("✅ Đăng nhập thành công! Đang chuyển hướng...", "success");
+                setTimeout(() => {
+                    window.location.href = "/";
+                }, 1000);
+            } else {
+                showToast(data.detail || "Đăng nhập thất bại!", "error");
+            }
+        } catch(err) {
+            showToast("Lỗi kết nối máy chủ nội bộ!", "error");
+        }
+    }
+
+    function showToast(msg, type = 'error') {
+        const toast = document.getElementById('toast');
+        toast.textContent = msg;
+        toast.style.borderColor = type === 'success' ? '#10B981' : '#EF4444';
+        toast.style.color = type === 'success' ? '#A7F3D0' : '#FCA5A5';
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 3000);
+    }
+</script>
+
+</body>
+</html>
