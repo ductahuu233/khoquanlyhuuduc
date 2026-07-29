@@ -2615,6 +2615,7 @@
             showToast('Đã lập phiếu yêu cầu xuất kho thành công!');
             document.getElementById('form-add-request').reset();
             loadRequests();
+            loadExportSelect();
             loadAlerts();
         } else {
             const err = await res.json();
@@ -3210,7 +3211,7 @@
             } else if (tabId === 'tab-requests') {
                 await loadRequests();
             } else if (tabId === 'tab-export') {
-                await loadItems();
+                await Promise.all([loadExportSelect(), loadExportHistory()]);
             } else if (tabId === 'tab-inbound') {
                 await Promise.all([loadInboundHistory(), loadItems()]);
             } else if (tabId === 'tab-recovery') {
