@@ -4,44 +4,23 @@ import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 
 OUTPUT_DIR = os.path.join(os.getcwd(), "exports")
-DEFAULT_EXCEL_PATH = os.path.join(OUTPUT_DIR, "bao_cao_xuat_kho.xlsx")
 
 def generate_excel(export_data: dict) -> str:
     """
-    Append dữ liệu xuất kho mới vào file Báo cáo Excel.
-    Sử dụng try-except xử lý I/O file an toàn chống crash server khi file bị mở bởi ứng dụng khác.
+    Sinh file Excel Nhật Ký Xuất Kho cho phiếu xuất (so_nhat_ky_xuat_kho_{request_id}.xlsx).
     """
     if not os.path.exists(OUTPUT_DIR):
         os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-    file_path = DEFAULT_EXCEL_PATH
+    request_id = export_data.get("request_id", "000")
+    file_path = os.path.join(OUTPUT_DIR, f"so_nhat_ky_xuat_kho_{request_id}.xlsx")
 
-    # If file exists, load it; otherwise create a new workbook
-    if os.path.exists(file_path):
-        try:
-            wb = openpyxl.load_workbook(file_path)
-            ws = wb.active
-        except Exception as e:
-            # Fallback if corrupt or readable error
-            wb = openpyxl.Workbook()
-            ws = wb.active
-            ws.title = "Nhật Ký Xuất Kho"
-            _create_headers(ws)
-    else:
-        wb = openpyxl.Workbook()
-        ws = wb.active
-        ws.title = "Nhật Ký Xuất Kho"
-        _create_headers(ws)
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Nhật Ký Xuất Kho"
+    _create_headers(ws)
 
-    # Determine next STT
-    last_row = ws.max_row
     stt = 1
-    if last_row > 1:
-        val = ws.cell(row=last_row, column=1).value
-        if isinstance(val, int):
-            stt = val + 1
-
-    request_id = export_data.get("request_id", "")
     export_date = export_data.get("export_date", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     requester = export_data.get("requester_name", "")
     destination = export_data.get("destination", "N/A")
@@ -71,7 +50,6 @@ def generate_excel(export_data: dict) -> str:
         ws.append(row_data)
         stt += 1
 
-        # Format appended row
         current_row = ws.max_row
         for col_num in range(1, 11):
             cell = ws.cell(row=current_row, column=col_num)
@@ -81,18 +59,39 @@ def generate_excel(export_data: dict) -> str:
             else:
                 cell.alignment = Alignment(horizontal="left", vertical="center")
 
-    # Save Excel file safely with try-except
+    wb.save(file_path)
+
+    # Update master log file `bao_cao_xuat_kho.xlsx` for overall audit
     try:
-        wb.save(file_path)
-        return file_path
-    except PermissionError:
-        # File is opened in MS Excel or locked! Create a timestamped fallback file
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        fallback_path = os.path.join(OUTPUT_DIR, f"bao_cao_xuat_kho_{timestamp}.xlsx")
-        wb.save(fallback_path)
-        return fallback_path
+        master_path = os.path.join(OUTPUT_DIR, "bao_cao_xuat_kho.xlsx")
+        if os.path.exists(master_path):
+            m_wb = openpyxl.load_workbook(master_path)
+            m_ws = m_wb.active
+        else:
+            m_wb = openpyxl.Workbook()
+            m_ws = m_wb.active
+            m_ws.title = "Tổng Hợp Xuất Kho"
+            _create_headers(m_ws)
+        
+        for item in items:
+            row_data = [
+                m_ws.max_row,
+                f"PXK-{request_id}",
+                export_date,
+                requester,
+                destination,
+                reason,
+                item.get("item_code", ""),
+                item.get("name", ""),
+                item.get("unit", ""),
+                item.get("quantity", 0)
+            ]
+            m_ws.append(row_data)
+        m_wb.save(master_path)
     except Exception as e:
-        raise RuntimeError(f"Lỗi không xác định khi lưu file Excel: {e}")
+        print("Update master excel log error:", e)
+
+    return file_path
 
 def _create_headers(ws):
     headers = [
@@ -109,7 +108,6 @@ def _create_headers(ws):
         cell.font = header_font
         cell.alignment = Alignment(horizontal="center", vertical="center")
 
-    # Column widths
     col_widths = [8, 15, 20, 22, 25, 25, 15, 30, 15, 15]
     for i, col_width in enumerate(col_widths, start=1):
         col_letter = openpyxl.utils.get_column_letter(i)

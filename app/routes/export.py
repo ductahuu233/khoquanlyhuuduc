@@ -347,6 +347,33 @@ def download_file(filename: str, db: Session = Depends(get_db)):
         except Exception as e:
             print("Auto-regenerate word error:", e)
 
+    # Auto-regenerate Excel spreadsheet dynamically on download
+    if actual_filename.startswith("so_nhat_ky_xuat_kho_") and actual_filename.endswith(".xlsx"):
+        try:
+            req_id_str = actual_filename.replace("so_nhat_ky_xuat_kho_", "").replace(".xlsx", "")
+            req_id = int(req_id_str)
+            req = db.query(Request).filter(Request.id == req_id).first()
+            if req:
+                export_items_list = [
+                    {
+                        "item_code": d.item.item_code if d.item else f"VT-{d.item_id}",
+                        "name": d.item.name if d.item else "Vật tư",
+                        "unit": d.item.unit if d.item else "Cái",
+                        "quantity": d.quantity
+                    } for d in req.details
+                ]
+                export_data = {
+                    "request_id": req.id,
+                    "requester_name": req.requester_name,
+                    "destination": req.destination or "Đơn vị tiếp nhận",
+                    "reason": req.reason or "Phục vụ công tác chuyên môn",
+                    "export_date": (req.exported_at or datetime.now()).strftime("%d/%m/%Y"),
+                    "items": export_items_list
+                }
+                generate_excel(export_data)
+        except Exception as e:
+            print("Auto-regenerate excel error:", e)
+
     if not os.path.exists(file_path):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

@@ -278,7 +278,7 @@ def generate_word(export_data: dict) -> str:
     r_end.font.name = "Times New Roman"
     r_end.font.size = Pt(12)
 
-    # 7. KHUNG CHỮ KÝ (Nơi nhận bên trái, Người trình bên phải)
+    # 7. KHUNG CHỮ KÝ TRUYỀN THỐNG (Bên trái: TRƯỞNG ĐOÀN, Bên phải: NGƯỜI TRÌNH)
     sig_table = doc.add_table(rows=1, cols=2)
     sig_table.alignment = WD_TABLE_ALIGNMENT.CENTER
     
@@ -295,22 +295,23 @@ def generate_word(export_data: dict) -> str:
 
     s_left = sig_table.cell(0, 0)
     s_right = sig_table.cell(0, 1)
-    s_left.width = Inches(3.0)
+    s_left.width = Inches(3.2)
     s_right.width = Inches(3.4)
 
-    # Bên trái: Nơi nhận
-    p_nn = s_left.paragraphs[0]
-    p_nn.paragraph_format.line_spacing = 1.15
-    r_nn_title = p_nn.add_run("NƠI NHẬN:\n")
-    r_nn_title.bold = True
-    r_nn_title.font.name = "Times New Roman"
-    r_nn_title.font.size = Pt(10)
-    
-    r_nn_body = p_nn.add_run("- Như trên;\n- Lưu: VT, Kho.")
-    r_nn_body.font.name = "Times New Roman"
-    r_nn_body.font.size = Pt(10)
+    # Cột trái: TRƯỞNG ĐOÀN KÝ DẤU
+    p_truong = s_left.paragraphs[0]
+    p_truong.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    r_t1 = p_truong.add_run("TRƯỞNG ĐOÀN\n")
+    r_t1.bold = True
+    r_t1.font.name = "Times New Roman"
+    r_t1.font.size = Pt(12)
 
-    # Bên phải: Người trình
+    r_t2 = p_truong.add_run("(Ký, đóng dấu và ghi rõ họ tên)\n\n\n\n\n")
+    r_t2.italic = True
+    r_t2.font.name = "Times New Roman"
+    r_t2.font.size = Pt(10)
+
+    # Cột phải: NGƯỜI TRÌNH KÝ HỌ TÊN
     p_trinh = s_right.paragraphs[0]
     p_trinh.alignment = WD_ALIGN_PARAGRAPH.CENTER
     r_trinh1 = p_trinh.add_run("NGƯỜI TRÌNH\n")
@@ -327,16 +328,6 @@ def generate_word(export_data: dict) -> str:
     r_trinh3.bold = True
     r_trinh3.font.name = "Times New Roman"
     r_trinh3.font.size = Pt(12)
-
-    # Khung phê duyệt của Lãnh đạo ở cuối
-    p_app = doc.add_paragraph()
-    p_app.paragraph_format.space_before = Pt(30)
-    r_app = p_app.add_run("Ý KIẾN PHÊ DUYỆT CỦA LÃNH ĐẠO:\n")
-    r_app.bold = True
-    r_app.font.name = "Times New Roman"
-    r_app.font.size = Pt(11)
-    p_app.add_run("......................................................................................................................................................................\n").font.name = "Times New Roman"
-    p_app.add_run("......................................................................................................................................................................").font.name = "Times New Roman"
 
     # Save file Word
     try:
