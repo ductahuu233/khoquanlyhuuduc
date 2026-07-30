@@ -277,6 +277,44 @@ def generate_disposal_word(db: Session = Depends(get_db)):
             if i in [0, 1, 3, 4]:
                 p.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
+    # Khung chữ ký chuẩn NĐ 30
+    p_space = doc.add_paragraph()
+    p_space.paragraph_format.space_before = Pt(14)
+    p_space.paragraph_format.space_after = Pt(10)
+
+    sig_table = doc.add_table(rows=1, cols=2)
+    sig_table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    for row in sig_table.rows:
+        for cell in row.cells:
+            tcPr = cell._element.get_or_add_tcPr()
+            tcBorders = OxmlElement('w:tcBorders')
+            for b in ['top', 'left', 'bottom', 'right', 'insideH', 'insideV']:
+                node = OxmlElement(f'w:{b}')
+                node.set(qn('w:val'), 'none')
+                tcBorders.append(node)
+            tcPr.append(tcBorders)
+
+    s_left, s_right = sig_table.cell(0, 0), sig_table.cell(0, 1)
+    s_left.width, s_right.width = Inches(3.2), Inches(3.4)
+
+    p_t = s_left.paragraphs[0]
+    p_t.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    r_t1 = p_t.add_run("TRƯỞNG ĐOÀN\n")
+    r_t1.bold = True
+    r_t1.font.size = Pt(12)
+    r_t2 = p_t.add_run("(Ký, đóng dấu và ghi rõ họ tên)\n\n\n\n\n")
+    r_t2.italic = True
+    r_t2.font.size = Pt(10)
+
+    p_r = s_right.paragraphs[0]
+    p_r.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    r_r1 = p_r.add_run("NGƯỜI TRÌNH\n")
+    r_r1.bold = True
+    r_r1.font.size = Pt(12)
+    r_r2 = p_r.add_run("(Ký và ghi rõ họ tên)\n\n\n\n\n")
+    r_r2.italic = True
+    r_r2.font.size = Pt(10)
+
     doc.save(file_path)
     return FileResponse(
         path=file_path,
