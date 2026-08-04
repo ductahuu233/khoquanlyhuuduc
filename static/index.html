@@ -1098,11 +1098,56 @@
 
             <!-- RIGHT COLUMN PANEL: Historical Generated Reports -->
             <div class="card">
-                <div class="card-title">
-                    <span><i class="fa-solid fa-folder-open"></i> Lịch Sử Bộ File Báo Cáo Đã Xuất (Cột Phải)</span>
-                    <button class="btn btn-secondary" onclick="loadExportHistory()" style="width: auto; padding: 5px 10px; font-size: 12px;">
+                <div class="card-title" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <span><i class="fa-solid fa-folder-open" style="color: #FEF08A;"></i> LỊCH SỬ BỘ FILE BÁO CÁO ĐÃ XUẤT</span>
+                    <button class="btn btn-secondary" onclick="loadExportHistory()" style="width: auto; padding: 5px 12px; font-size: 11px;">
                         <i class="fa-solid fa-rotate-right"></i> Làm Mới
                     </button>
+                </div>
+
+                <!-- FILTER BAR: BY YEAR, MONTH & SEARCH TEXT -->
+                <div style="background: rgba(4, 20, 15, 0.75); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 12px; padding: 12px; margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <label style="font-size: 11px; font-weight: 700; color: #FEF08A; margin: 0; white-space: nowrap;"><i class="fa-solid fa-calendar-days" style="color: #F59E0B;"></i> Năm:</label>
+                        <select id="filter-history-year" onchange="loadExportHistory()" style="font-size: 12px; padding: 6px 10px; background: rgba(0,0,0,0.6); color: #FEF08A; border: 1px solid rgba(245,158,11,0.5); border-radius: 8px; cursor: pointer;">
+                            <option value="">-- Tất cả năm --</option>
+                            <option value="2026">Năm 2026</option>
+                            <option value="2025">Năm 2025</option>
+                            <option value="2024">Năm 2024</option>
+                        </select>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <label style="font-size: 11px; font-weight: 700; color: #FEF08A; margin: 0; white-space: nowrap;"><i class="fa-solid fa-filter" style="color: #F59E0B;"></i> Tháng:</label>
+                        <select id="filter-history-month" onchange="loadExportHistory()" style="font-size: 12px; padding: 6px 10px; background: rgba(0,0,0,0.6); color: #FEF08A; border: 1px solid rgba(245,158,11,0.5); border-radius: 8px; cursor: pointer;">
+                            <option value="">-- 12 Tháng --</option>
+                            <option value="1">Tháng 1</option>
+                            <option value="2">Tháng 2</option>
+                            <option value="3">Tháng 3</option>
+                            <option value="4">Tháng 4</option>
+                            <option value="5">Tháng 5</option>
+                            <option value="6">Tháng 6</option>
+                            <option value="7">Tháng 7</option>
+                            <option value="8">Tháng 8</option>
+                            <option value="9">Tháng 9</option>
+                            <option value="10">Tháng 10</option>
+                            <option value="11">Tháng 11</option>
+                            <option value="12">Tháng 12</option>
+                        </select>
+                    </div>
+
+                    <div style="flex: 1; min-width: 180px; display: flex; align-items: center;">
+                        <input type="text" id="filter-history-search" placeholder="🔍 Tìm mã PXK, tên cán bộ, nơi nhận..." oninput="loadExportHistory()" style="font-size: 12px; padding: 6px 12px; width: 100%; background: rgba(0,0,0,0.6); border: 1px solid rgba(16,185,129,0.35); border-radius: 8px; color: #FFFDF0;">
+                    </div>
+
+                    <button type="button" class="btn btn-secondary" onclick="resetExportHistoryFilters()" style="padding: 6px 10px; font-size: 11px; width: auto;" title="Xóa toàn bộ lọc">
+                        <i class="fa-solid fa-xmark"></i> Bỏ Lọc
+                    </button>
+                </div>
+
+                <!-- FILTER SUMMARY BADGE -->
+                <div id="history-filter-badge" style="font-size: 11px; color: #6EE7B7; margin-bottom: 10px; font-weight: 600;">
+                    Hiển thị tất cả lịch sử bộ file báo cáo xuất kho
                 </div>
                 
                 <div class="table-responsive">
@@ -2764,12 +2809,37 @@
     // Export History Functions (Rendered in Right Panel)
     async function loadExportHistory() {
         try {
-            const res = await fetch('/api/export/history');
+            const year = document.getElementById('filter-history-year') ? document.getElementById('filter-history-year').value : '';
+            const month = document.getElementById('filter-history-month') ? document.getElementById('filter-history-month').value : '';
+            const search = document.getElementById('filter-history-search') ? document.getElementById('filter-history-search').value.trim() : '';
+
+            let url = '/api/export/history?';
+            const params = new URLSearchParams();
+            if (year) params.append('year', year);
+            if (month) params.append('month', month);
+            if (search) params.append('search', search);
+            url += params.toString();
+
+            const res = await fetch(url);
             const historyList = await res.json();
             const tbody = document.getElementById('export-history-table-body');
+            const badgeEl = document.getElementById('history-filter-badge');
 
-            if (historyList.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="${currentRole === 'admin' ? 5 : 4}" style="text-align: center; color: #A7F3D0;">Chưa có lịch sử xuất kho nào.</td></tr>`;
+            if (badgeEl) {
+                let filterDesc = [];
+                if (year) filterDesc.push(`Năm ${year}`);
+                if (month) filterDesc.push(`Tháng ${month}`);
+                if (search) filterDesc.push(`Từ khóa: "${search}"`);
+                
+                if (filterDesc.length > 0) {
+                    badgeEl.innerHTML = `<i class="fa-solid fa-filter" style="color: #F59E0B;"></i> Đang lọc: <strong>${filterDesc.join(' | ')}</strong> (Tìm thấy ${historyList.length} bộ hồ sơ)`;
+                } else {
+                    badgeEl.innerHTML = `<i class="fa-solid fa-list-check" style="color: #10B981;"></i> Hiển thị tổng số <strong>${historyList.length}</strong> bộ hồ sơ file báo cáo`;
+                }
+            }
+
+            if (!historyList || historyList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="${currentRole === 'admin' ? 5 : 4}" style="text-align: center; color: #FEF08A; padding: 20px;">Không tìm thấy bộ hồ sơ xuất kho nào phù hợp với bộ lọc.</td></tr>`;
                 return;
             }
 
@@ -2814,6 +2884,13 @@
         } catch (err) {
             console.error(err);
         }
+    }
+
+    function resetExportHistoryFilters() {
+        if (document.getElementById('filter-history-year')) document.getElementById('filter-history-year').value = '';
+        if (document.getElementById('filter-history-month')) document.getElementById('filter-history-month').value = '';
+        if (document.getElementById('filter-history-search')) document.getElementById('filter-history-search').value = '';
+        loadExportHistory();
     }
 
     function openEditExportModal(id) {

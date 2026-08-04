@@ -3,7 +3,7 @@ import time
 import zipfile
 from datetime import datetime
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, status, Header
+from fastapi import APIRouter, Depends, HTTPException, status, Header, Query
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from app.database import get_db
@@ -219,9 +219,38 @@ def execute_export(
             detail=f"Lỗi khi tự động tạo bộ 3 file báo cáo: {e}"
         )
 
+from sqlalchemy import extract
+
 @router.get("/api/export/history")
-def get_export_history(db: Session = Depends(get_db)):
-    exported_requests = db.query(Request).filter(Request.status == "exported").order_by(Request.exported_at.desc()).all()
+def get_export_history(
+    year: Optional[int] = Query(None),
+    month: Optional[int] = Query(None),
+    search: Optional[str] = Query(None),
+    db: Session = Depends(get_db)
+):
+    query = db.query(Request).filter(Request.status == "exported")
+
+    if year:
+        query = query.filter(extract('year', Request.exported_at) == year)
+    if month:
+        query = query.filter(extract('month', Request.exported_at) == month)
+    if search:
+        search_clean = search.strip()
+        if search_clean.upper().startswith("#PXK-"):
+            search_clean = search_clean[5:]
+        elif search_clean.upper().startswith("PXK-"):
+            search_clean = search_clean[4:]
+            
+        if search_clean.isdigit():
+            query = query.filter((Request.id == int(search_clean)) | (Request.requester_name.ilike(f"%{search}%")) | (Request.destination.ilike(f"%{search}%")))
+        else:
+            query = query.filter(
+                (Request.requester_name.ilike(f"%{search}%")) |
+                (Request.destination.ilike(f"%{search}%")) |
+                (Request.reason.ilike(f"%{search}%"))
+            )
+
+    exported_requests = query.order_by(Request.exported_at.desc()).all()
     ts = int(time.time())
     return [
         {
